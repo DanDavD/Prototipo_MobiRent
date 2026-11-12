@@ -1,68 +1,102 @@
 /* ==============================================================
-   MobiRent Honduras - Estilos Globales y Simulador Móvil
+   MobiRent Honduras - Estilos Globales (Mobile-First Airbnb Aesthetic)
    ============================================================== */
 
-/* Tipografía base */
-body {
-  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --color-forest: #1A4314;
+  --color-forest-hover: #13330F;
+  --color-forest-light: #F2F7F1;
+  --color-forest-border: #DCE6DA;
+  --color-charcoal: #222222;
+  --color-muted: #717171;
+  --color-border: #EBEBEB;
+  --color-bg-subtle: #F7F7F7;
 }
 
-/* Ocultar elementos durante el renderizado si se requiere */
-[v-cloak] {
-  opacity: 0;
-  transition: opacity 0.15s ease-in;
+html, body {
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  color: var(--color-charcoal);
+  background-color: #FFFFFF;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-tap-highlight-color: transparent;
 }
 
-/* Barra de desplazamiento personalizada y elegante */
+/* Evitar zoom automático en inputs en iOS Safari (mínimo 16px en móvil) */
+@media screen and (max-width: 768px) {
+  input, select, textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* Scrollbars minimalistas */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 4px;
+  height: 4px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: #E5E7EB;
   border-radius: 9999px;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
-}
-
-/* Ocultar scrollbar horizontal en filtros de categorías móviles */
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
 }
 
-/* ==============================================================
-   Simulador de Marco de Smartphone (Para proyectar en clase)
-   ============================================================== */
+/* Sombras refinadas estilo Airbnb */
+.shadow-airbnb {
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06), 0 4px 12px rgba(0, 0, 0, 0.04);
+}
+
+.shadow-airbnb-hover:hover {
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08), 0 8px 18px rgba(0, 0, 0, 0.06);
+}
+
+.shadow-airbnb-modal {
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.14);
+}
+
+.shadow-bottom-nav {
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+}
+
+/* Soporte para área segura de iPhone / iPad */
+.safe-bottom {
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
+}
+
+/* Marco de Celular para Presentación en Pantalla Grande */
 .mobile-frame-wrapper {
   max-width: 420px;
   margin: 0 auto;
-  border: 12px solid #0f172a;
-  border-radius: 46px;
-  box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.45);
+  border: 1px solid #E5E7EB;
+  border-radius: 40px;
+  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.10);
   overflow: hidden;
-  min-height: 860px;
+  min-height: 840px;
   position: relative;
-  background: #f8fafc;
+  background: #FFFFFF;
 }
 
 .mobile-notch {
-  width: 140px;
-  height: 22px;
-  background: #0f172a;
+  width: 120px;
+  height: 18px;
+  background: #E5E7EB;
   margin: 0 auto;
-  border-bottom-left-radius: 14px;
-  border-bottom-right-radius: 14px;
+  border-bottom-left-radius: 12px;
+  border-bottom-right-radius: 12px;
   position: absolute;
   top: 0;
   left: 50%;

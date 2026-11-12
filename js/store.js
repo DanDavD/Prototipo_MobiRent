@@ -1,60 +1,60 @@
 /**
  * ==============================================================
- * MobiRent Honduras - Gestor de Estado Central (js/store.js)
+ * MobiRent - Gestor de Estado Central (js/store.js)
  * ==============================================================
- * Centraliza el estado reactivo, la lógica de negocio y las
- * operaciones de la aplicación (Patrón Store de Vue 3).
+ * Manejo reactivo de estado global, filtrado de inventario,
+ * cotizador transparente y transiciones operativas.
  */
 
-const { reactive, computed } = Vue;
+const { reactive } = Vue;
 
 const rawData = window.MobiRentData;
 
 const store = reactive({
-  // Estado de navegación y presentación
-  activeRole: 'renter', // 'renter' (comprador), 'owner' (vendedor/dueño), 'admin' (administrador)
+  // Navegación de roles y visualización
+  activeRole: 'renter', // 'renter', 'owner', 'admin'
   isMobileView: false,
   toastMessage: '',
 
-  // Filtros del catálogo
+  // Parámetros de búsqueda y filtros
   searchQuery: '',
   selectedCity: 'Todas',
-  selectedCategory: 'Todos',
+  selectedCategory: 'Todos los artículos',
 
-  // Datos reactivos de catálogo y pedidos
+  // Datos reactivos
   categories: rawData.categories,
   publishCategories: rawData.publishCategories,
   imagePresets: rawData.imagePresets,
   items: [...rawData.initialItems],
   rentals: [...rawData.initialRentals],
 
-  // Control de modales
+  // Control de ventanas modulares
   selectedItem: null,
   showCheckoutModal: false,
   showMyRentalsModal: false,
   showPublishModal: false,
 
-  // Pestañas activas por rol
+  // Pestañas secundarias
   ownerTab: 'items',
   adminTab: 'logistics',
 
-  // Calculadora de alquiler
+  // Configuración de cotización
   bookingDurationType: 'dia', // 'dia', 'semana', 'mes'
   bookingQuantity: 2,
   defaultTransportFee: 250,
   defaultServiceFee: 150,
 
-  // Formulario de checkout
+  // Datos de entrega y pago
   checkoutForm: {
-    address: 'Colonia Los Castaños, 4ta calle, casa #12',
+    address: 'Colonia Los Castaños, 4ta calle, casa 12',
     phone: '+504 9988-7766',
     paymentMethod: 'card'
   },
 
-  // Formulario de publicación (Dueño)
+  // Formulario para nuevo artículo
   newItem: {
     title: '',
-    category: 'Mobiliario Hogar',
+    category: 'Mobiliario de hogar',
     city: 'San Pedro Sula',
     condition: 'Como nuevo',
     deposit: 600,
@@ -62,25 +62,27 @@ const store = reactive({
     priceWeek: 400,
     priceMonth: 1200,
     image: rawData.imagePresets[0].url,
-    description: 'Mueble en excelente condición listo para entrega con MobiRent.'
+    description: 'Artículo en óptimo estado de conservación, verificado y listo para entrega mediante el servicio logístico de MobiRent.'
   },
 
   // ==============================================================
-  // PROPIEDADES COMPUTADAS Y CÁLCULOS
+  // PROPIEDADES CALCULADAS
   // ==============================================================
 
   get filteredItems() {
     return this.items.filter(item => {
-      const matchesCategory = this.selectedCategory === 'Todos' || item.category === this.selectedCategory;
+      const matchesCategory = this.selectedCategory === 'Todos los artículos' || item.category === this.selectedCategory;
       const matchesCity = this.selectedCity === 'Todas' || item.city === this.selectedCity;
-      const matchesSearch = item.title.toLowerCase().includes(this.searchQuery.toLowerCase()) || 
-                            item.description.toLowerCase().includes(this.searchQuery.toLowerCase());
+      const query = this.searchQuery.toLowerCase().trim();
+      const matchesSearch = !query || 
+                            item.title.toLowerCase().includes(query) || 
+                            item.description.toLowerCase().includes(query) ||
+                            (item.neighborhood && item.neighborhood.toLowerCase().includes(query));
       return matchesCategory && matchesCity && matchesSearch;
     });
   },
 
   get ownerArticles() {
-    // Para la demostración se toma a Gabriela Flores como usuaria activa
     return this.items.filter(item => item.ownerName === 'Gabriela Flores');
   },
 
@@ -90,7 +92,7 @@ const store = reactive({
 
   get ownerStats() {
     const totalEarnings = this.ownerRentals.reduce((sum, r) => sum + r.ownerPayout, 0);
-    const activeRentals = this.ownerRentals.filter(r => r.status !== 'DEVUELTA').length;
+    const activeRentals = this.ownerRentals.filter(r => r.status !== 'Devuelto').length;
     return { totalEarnings, activeRentals };
   },
 
@@ -104,11 +106,11 @@ const store = reactive({
   },
 
   get pendingDeliveriesCount() {
-    return this.rentals.filter(r => ['ASIGNADA', 'EN RECOGIDA', 'EN TRÁNSITO'].includes(r.status)).length;
+    return this.rentals.filter(r => ['Asignado', 'En recogida', 'En tránsito'].includes(r.status)).length;
   },
 
   get pendingRequestsCount() {
-    return this.rentals.filter(r => r.status === 'PENDIENTE_APROBACION').length;
+    return this.rentals.filter(r => r.status === 'Pendiente de aprobación').length;
   },
 
   get myRentalsCount() {
@@ -116,9 +118,9 @@ const store = reactive({
   },
 
   get bookingDurationTypeLabel() {
-    if (this.bookingDurationType === 'dia') return this.bookingQuantity === 1 ? 'Día' : 'Días';
-    if (this.bookingDurationType === 'semana') return this.bookingQuantity === 1 ? 'Semana' : 'Semanas';
-    return this.bookingQuantity === 1 ? 'Mes' : 'Meses';
+    if (this.bookingDurationType === 'dia') return this.bookingQuantity === 1 ? 'día' : 'días';
+    if (this.bookingDurationType === 'semana') return this.bookingQuantity === 1 ? 'semana' : 'semanas';
+    return this.bookingQuantity === 1 ? 'mes' : 'meses';
   },
 
   get calculateRentalSubtotal() {
@@ -135,7 +137,7 @@ const store = reactive({
   },
 
   // ==============================================================
-  // ACCIONES / MÉTODOS DEL NEGOCIO
+  // ACCIONES Y MÉTODOS OPERATIVOS
   // ==============================================================
 
   showToast(msg) {
@@ -174,7 +176,7 @@ const store = reactive({
       id: Math.floor(100 + Math.random() * 900),
       itemId: this.selectedItem.id,
       itemTitle: this.selectedItem.title,
-      renterName: 'Daniel Hernández (Tú)',
+      renterName: 'Daniel Hernández',
       renterPhone: this.checkoutForm.phone,
       ownerName: this.selectedItem.ownerName,
       duration: `${this.bookingQuantity} ${this.bookingDurationTypeLabel}`,
@@ -185,30 +187,31 @@ const store = reactive({
       deposit: this.selectedItem.deposit,
       totalPaid: this.calculateRentalTotal,
       ownerPayout: this.calculateRentalSubtotal,
-      status: 'EN RECOGIDA',
-      pickupAddress: 'Col. Moderna, San Pedro Sula',
+      status: 'En recogida',
+      pickupAddress: 'Colonia Trejo, San Pedro Sula',
       deliveryAddress: this.checkoutForm.address
     };
 
     this.rentals.unshift(newRental);
     this.showCheckoutModal = false;
     this.selectedItem = null;
-    this.showToast('¡Alquiler confirmado con éxito! MobiRent ya programó la recogida.');
+    this.showToast('Reserva confirmada. La recogida ha sido programada con el transportista.');
     this.showMyRentalsModal = true;
   },
 
   publishItem() {
     if (!this.newItem.title.trim()) {
-      alert('Por favor ingresa un título para tu artículo');
+      alert('Por favor ingrese un título descriptivo para el artículo.');
       return;
     }
 
     const createdItem = {
       id: Date.now(),
-      title: this.newItem.title,
+      title: this.newItem.title.trim(),
       category: this.newItem.category,
       condition: this.newItem.condition,
       city: this.newItem.city,
+      neighborhood: this.newItem.city === 'San Pedro Sula' ? 'Colonia Moderna' : 'Lomas del Guijarro',
       priceDay: Number(this.newItem.priceDay) || 100,
       priceWeek: Number(this.newItem.priceWeek) || 450,
       priceMonth: Number(this.newItem.priceMonth) || 1300,
@@ -217,27 +220,25 @@ const store = reactive({
       rating: 5.0,
       reviewsCount: 1,
       image: this.newItem.image,
-      description: this.newItem.description,
+      description: this.newItem.description.trim(),
       status: 'activo'
     };
 
     this.items.unshift(createdItem);
     this.showPublishModal = false;
-    this.showToast('¡Artículo publicado en MobiRent! Ya aparece en el catálogo.');
-
-    // Limpiar campo título
+    this.showToast('Artículo publicado exitosamente en el catálogo de MobiRent.');
     this.newItem.title = '';
   },
 
   toggleItemStatus(item) {
     item.status = item.status === 'activo' ? 'pausado' : 'activo';
-    this.showToast(`Artículo ${item.status === 'activo' ? 'activado' : 'pausado'}`);
+    this.showToast(`El artículo ahora está ${item.status}.`);
   },
 
   deleteItem(itemId) {
-    if (confirm('¿Seguro que deseas eliminar este artículo de MobiRent?')) {
+    if (confirm('¿Desea retirar esta publicación del catálogo?')) {
       this.items = this.items.filter(i => i.id !== itemId);
-      this.showToast('Artículo eliminado del catálogo');
+      this.showToast('Publicación retirada.');
     }
   },
 
@@ -245,49 +246,49 @@ const store = reactive({
     const rental = this.rentals.find(r => r.id === rentalId);
     if (rental) {
       rental.status = newStatus;
-      this.showToast(`Estado del pedido #${rentalId} actualizado a: ${newStatus}`);
+      this.showToast(`Estado de la orden #${rentalId} actualizado a ${newStatus}.`);
     }
   },
 
   approveRentalByOwner(rentalId) {
-    this.setRentalStatus(rentalId, 'ASIGNADA');
+    this.setRentalStatus(rentalId, 'Asignado');
   },
 
   rejectRentalByOwner(rentalId) {
     this.rentals = this.rentals.filter(r => r.id !== rentalId);
-    this.showToast('Solicitud rechazada');
+    this.showToast('Solicitud declinada.');
   },
 
   requestPayout() {
-    this.showToast('¡Solicitud de retiro enviada! Se depositará en tu cuenta BAC.');
+    this.showToast('Solicitud de liquidación procesada para depósito bancario.');
   },
 
   getRentalBadgeClass(status) {
     switch(status) {
-      case 'PENDIENTE': return 'bg-amber-100 text-amber-800';
-      case 'ASIGNADA': return 'bg-indigo-100 text-indigo-800';
-      case 'EN RECOGIDA': return 'bg-sky-100 text-sky-800';
-      case 'EN TRÁNSITO': return 'bg-blue-100 text-blue-800 animate-pulse';
-      case 'ENTREGADA': return 'bg-emerald-100 text-emerald-800';
-      case 'DEVUELTA': return 'bg-purple-100 text-purple-800';
-      default: return 'bg-slate-100 text-slate-800';
+      case 'Pendiente de aprobación': return 'bg-neutral-100 text-neutral-700 border border-neutral-200';
+      case 'Asignado': return 'bg-neutral-100 text-charcoal border border-neutral-300';
+      case 'En recogida': return 'bg-forest-light text-forest border border-forest-border';
+      case 'En tránsito': return 'bg-forest text-white';
+      case 'Entregado': return 'bg-neutral-900 text-white';
+      case 'Devuelto': return 'bg-neutral-100 text-neutral-600 border border-neutral-200';
+      default: return 'bg-neutral-100 text-neutral-700';
     }
   },
 
   getAdminBadgeClass(status) {
     switch(status) {
-      case 'PENDIENTE': return 'bg-amber-900/60 text-amber-300 border border-amber-700';
-      case 'ASIGNADA': return 'bg-indigo-900/60 text-indigo-300 border border-indigo-700';
-      case 'EN RECOGIDA': return 'bg-sky-900/60 text-sky-300 border border-sky-700';
-      case 'EN TRÁNSITO': return 'bg-blue-900/60 text-blue-300 border border-blue-700';
-      case 'ENTREGADA': return 'bg-emerald-900/60 text-emerald-300 border border-emerald-700';
-      case 'DEVUELTA': return 'bg-purple-900/60 text-purple-300 border border-purple-700';
-      default: return 'bg-slate-800 text-slate-300';
+      case 'Pendiente de aprobación': return 'bg-neutral-100 text-neutral-700 border border-neutral-300';
+      case 'Asignado': return 'bg-neutral-100 text-charcoal border border-neutral-300';
+      case 'En recogida': return 'bg-forest-light text-forest border border-forest-border';
+      case 'En tránsito': return 'bg-forest text-white';
+      case 'Entregado': return 'bg-neutral-900 text-white';
+      case 'Devuelto': return 'bg-neutral-100 text-neutral-600 border border-neutral-200';
+      default: return 'bg-neutral-100 text-neutral-700';
     }
   },
 
   resetData() {
-    if (confirm('¿Restablecer los datos de ejemplo del prototipo?')) {
+    if (confirm('¿Restablecer los datos de demostración del sistema?')) {
       location.reload();
     }
   }

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MobiRent Honduras - Prototipo Interactivo</title>
+  <title>MobiRent - Alquiler de Mobiliario y Equipamiento</title>
   
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -12,17 +12,24 @@
       theme: {
         extend: {
           fontFamily: {
-            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
           },
           colors: {
-            brand: {
-              50: '#f0fdf4',
-              100: '#dcfce7',
-              500: '#10b981',
-              600: '#059669',
-              700: '#047857',
-              800: '#065f46',
-              900: '#064e3b',
+            forest: {
+              DEFAULT: '#1A4314',
+              hover: '#13330F',
+              light: '#F4F7F3',
+              border: '#DCE6DA'
+            },
+            charcoal: {
+              DEFAULT: '#222222',
+              muted: '#717171',
+              light: '#B0B0B0'
+            },
+            surface: {
+              DEFAULT: '#FFFFFF',
+              subtle: '#F7F7F7',
+              border: '#EBEBEB'
             }
           }
         }
@@ -33,9 +40,9 @@
   <!-- Google Fonts: Plus Jakarta Sans -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-  <!-- Estilos Custom / Simulador Móvil -->
+  <!-- Estilos Globales -->
   <link rel="stylesheet" href="css/styles.css">
 
   <!-- Vue 3 CDN (jsDelivr con Fallback) -->
@@ -46,19 +53,19 @@
     }
   </script>
 </head>
-<body class="bg-slate-100 text-slate-800 font-sans antialiased min-h-screen">
+<body class="bg-white text-charcoal font-sans antialiased min-h-screen selection:bg-forest selection:text-white">
 
-  <div id="app" class="min-h-screen flex flex-col">
+  <div id="app" class="min-h-screen flex flex-col bg-white">
     
-    <!-- Barra Superior de Navegación y Roles -->
+    <!-- Barra Superior de Navegación -->
     <navbar-component></navbar-component>
 
     <!-- Contenedor Principal (Soporta Pantalla Completa o Modo Smartphone) -->
     <main 
-      class="flex-1 py-4 sm:py-6" 
-      :class="store.isMobileView ? 'bg-slate-900/90 py-8 px-4 flex justify-center items-start' : 'max-w-7xl w-full mx-auto px-4'">
+      class="flex-1" 
+      :class="store.isMobileView ? 'py-8 px-4 flex justify-center items-start bg-neutral-100' : 'w-full'">
       
-      <div :class="store.isMobileView ? 'mobile-frame-wrapper w-full' : 'w-full bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden'">
+      <div :class="store.isMobileView ? 'mobile-frame-wrapper w-full' : 'w-full'">
         <div v-if="store.isMobileView" class="mobile-notch"></div>
 
         <!-- 1. Vista Arrendatario / Comprador -->
@@ -74,7 +81,7 @@
 
     </main>
 
-    <!-- Capa de Modales (Detalle, Checkout, Tracking, Publicar y Toast) -->
+    <!-- Capa de Modales (Detalle, Checkout, Seguimiento, Publicación y Mensajes) -->
     <modals-component></modals-component>
 
   </div>
@@ -82,20 +89,13 @@
   <!-- ============================================================== -->
   <!-- SCRIPTS MODULARES DE LA APLICACIÓN                             -->
   <!-- ============================================================== -->
-  <!-- 1. Catálogo inicial y datos mock -->
   <script src="js/data.js"></script>
-
-  <!-- 2. Estado central reactivo (Store) -->
   <script src="js/store.js"></script>
-
-  <!-- 3. Componentes de interfaz -->
   <script src="js/components/Navbar.js"></script>
   <script src="js/components/RenterView.js"></script>
   <script src="js/components/OwnerView.js"></script>
   <script src="js/components/AdminView.js"></script>
   <script src="js/components/Modals.js"></script>
-
-  <!-- 4. Inicializador y montaje de Vue -->
   <script src="js/app.js"></script>
 
 </body>
