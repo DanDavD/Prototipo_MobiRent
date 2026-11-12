@@ -1,5 +1,5 @@
 /* ==============================================================
-   MobiRent Honduras - Estilos Globales (Estilo Airbnb Minimalista)
+   MobiRent Honduras - Estilos Globales (Mobile-First Airbnb Aesthetic)
    ============================================================== */
 
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
@@ -8,30 +8,33 @@
   --color-forest: #1A4314;
   --color-forest-hover: #13330F;
   --color-forest-light: #F2F7F1;
+  --color-forest-border: #DCE6DA;
   --color-charcoal: #222222;
   --color-muted: #717171;
   --color-border: #EBEBEB;
   --color-bg-subtle: #F7F7F7;
 }
 
-body {
+html, body {
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   color: var(--color-charcoal);
   background-color: #FFFFFF;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  -webkit-tap-highlight-color: transparent;
 }
 
-/* Ocultar elementos antes de hidratar */
-[v-cloak] {
-  opacity: 0;
-  transition: opacity 0.15s ease-in;
+/* Evitar zoom automático en inputs en iOS Safari (mínimo 16px en móvil) */
+@media screen and (max-width: 768px) {
+  input, select, textarea {
+    font-size: 16px !important;
+  }
 }
 
 /* Scrollbars minimalistas */
 ::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
+  width: 4px;
+  height: 4px;
 }
 
 ::-webkit-scrollbar-track {
@@ -39,12 +42,8 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #D1D5DB;
+  background: #E5E7EB;
   border-radius: 9999px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #9CA3AF;
 }
 
 .no-scrollbar::-webkit-scrollbar {
@@ -53,28 +52,38 @@ body {
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* Sombras refinadas estilo Airbnb */
 .shadow-airbnb {
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06), 0 4px 12px rgba(0, 0, 0, 0.04);
 }
 
 .shadow-airbnb-hover:hover {
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08), 0 8px 16px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08), 0 8px 18px rgba(0, 0, 0, 0.06);
 }
 
 .shadow-airbnb-modal {
-  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.14);
 }
 
-/* Marco de Celular Minimalista (Presentación) */
+.shadow-bottom-nav {
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+}
+
+/* Soporte para área segura de iPhone / iPad */
+.safe-bottom {
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
+}
+
+/* Marco de Celular para Presentación en Pantalla Grande */
 .mobile-frame-wrapper {
   max-width: 420px;
   margin: 0 auto;
   border: 1px solid #E5E7EB;
   border-radius: 40px;
-  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.10);
   overflow: hidden;
   min-height: 840px;
   position: relative;
