@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MobiRent Honduras - Prototipo Interactivo</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#f0fdf4',
+              100: '#dcfce7',
+              500: '#10b981',
+              600: '#059669',
+              700: '#047857',
+              800: '#065f46',
+              900: '#064e3b',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Google Fonts: Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Estilos Custom / Simulador Móvil -->
+  <link rel="stylesheet" href="css/styles.css">
+
+  <!-- Vue 3 CDN (jsDelivr con Fallback) -->
+  <script src="https://cdn.jsdelivr.net/npm/vue@3.4.21/dist/vue.global.prod.js"></script>
+  <script>
+    if (typeof Vue === 'undefined') {
+      document.write('<script src="https://unpkg.com/vue@3/dist/vue.global.js"><\/script>');
+    }
+  </script>
+</head>
+<body class="bg-slate-100 text-slate-800 font-sans antialiased min-h-screen">
+
+  <div id="app" class="min-h-screen flex flex-col">
+    
+    <!-- Barra Superior de Navegación y Roles -->
+    <navbar-component></navbar-component>
+
+    <!-- Contenedor Principal (Soporta Pantalla Completa o Modo Smartphone) -->
+    <main 
+      class="flex-1 py-4 sm:py-6" 
+      :class="store.isMobileView ? 'bg-slate-900/90 py-8 px-4 flex justify-center items-start' : 'max-w-7xl w-full mx-auto px-4'">
+      
+      <div :class="store.isMobileView ? 'mobile-frame-wrapper w-full' : 'w-full bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden'">
+        <div v-if="store.isMobileView" class="mobile-notch"></div>
+
+        <!-- 1. Vista Arrendatario / Comprador -->
+        <renter-view v-if="store.activeRole === 'renter'"></renter-view>
+
+        <!-- 2. Vista Arrendador / Vendedor (Dueño) -->
+        <owner-view v-else-if="store.activeRole === 'owner'"></owner-view>
+
+        <!-- 3. Vista Administrador (Panel Central & Logística) -->
+        <admin-view v-else-if="store.activeRole === 'admin'"></admin-view>
+
+      </div>
+
+    </main>
+
+    <!-- Capa de Modales (Detalle, Checkout, Tracking, Publicar y Toast) -->
+    <modals-component></modals-component>
+
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- SCRIPTS MODULARES DE LA APLICACIÓN                             -->
+  <!-- ============================================================== -->
+  <!-- 1. Catálogo inicial y datos mock -->
+  <script src="js/data.js"></script>
+
+  <!-- 2. Estado central reactivo (Store) -->
+  <script src="js/store.js"></script>
+
+  <!-- 3. Componentes de interfaz -->
+  <script src="js/components/Navbar.js"></script>
+  <script src="js/components/RenterView.js"></script>
+  <script src="js/components/OwnerView.js"></script>
+  <script src="js/components/AdminView.js"></script>
+  <script src="js/components/Modals.js"></script>
+
+  <!-- 4. Inicializador y montaje de Vue -->
+  <script src="js/app.js"></script>
+
+</body>
+</html>

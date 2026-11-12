@@ -1,0 +1,71 @@
+/* ==============================================================
+   MobiRent Honduras - Estilos Globales y Simulador Móvil
+   ============================================================== */
+
+/* Tipografía base */
+body {
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+}
+
+/* Ocultar elementos durante el renderizado si se requiere */
+[v-cloak] {
+  opacity: 0;
+  transition: opacity 0.15s ease-in;
+}
+
+/* Barra de desplazamiento personalizada y elegante */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Ocultar scrollbar horizontal en filtros de categorías móviles */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* ==============================================================
+   Simulador de Marco de Smartphone (Para proyectar en clase)
+   ============================================================== */
+.mobile-frame-wrapper {
+  max-width: 420px;
+  margin: 0 auto;
+  border: 12px solid #0f172a;
+  border-radius: 46px;
+  box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.45);
+  overflow: hidden;
+  min-height: 860px;
+  position: relative;
+  background: #f8fafc;
+}
+
+.mobile-notch {
+  width: 140px;
+  height: 22px;
+  background: #0f172a;
+  margin: 0 auto;
+  border-bottom-left-radius: 14px;
+  border-bottom-right-radius: 14px;
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 50;
+}
