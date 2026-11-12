@@ -2,165 +2,190 @@
  * ==============================================================
  * Componente: RenterView (js/components/RenterView.js)
  * ==============================================================
- * Vista del Arrendatario / Comprador: catálogo de artículos,
- * filtros por ciudad y categoría, cotizaciones y acceso a reservas.
+ * Catálogo del Arrendatario inspirado en la interfaz de Airbnb:
+ * barra de búsqueda flotante segmentada, carrusel de categorías
+ * con líneas sobrias y tarjetas fotográficas de bordes suaves.
  */
 
 window.RenterViewComponent = {
   template: `
-    <div class="flex flex-col min-h-full">
+    <div class="flex flex-col min-h-full bg-white">
       
-      <!-- Header de Búsqueda y Filtros -->
-      <div class="bg-white border-b border-slate-100 p-4 sticky top-0 z-20 shadow-xs">
-        <div class="flex items-center justify-between mb-3">
-          <div>
-            <h1 class="text-xl font-extrabold text-slate-900 tracking-tight">¿Qué necesitas alquilar?</h1>
-            <p class="text-xs text-slate-500">Muebles, electrodomésticos y equipo en Honduras</p>
-          </div>
+      <!-- Sección Superior: Barra de Búsqueda Segmentada Estilo Airbnb -->
+      <section class="border-b border-surface-border bg-white pt-5 pb-4 px-4 sm:px-8">
+        <div class="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
           
-          <!-- Botón Mis Alquileres -->
+          <!-- Barra de Búsqueda Central -->
+          <div class="w-full md:w-auto flex-1 max-w-2xl bg-white rounded-full border border-surface-border shadow-airbnb hover:shadow-airbnb-hover transition-all duration-200 flex items-center p-1.5 divide-x divide-surface-border">
+            
+            <!-- Segmento 1: Ciudad -->
+            <div class="flex-1 px-4 py-1">
+              <label class="block text-[10px] uppercase font-bold text-charcoal tracking-wider">Ubicación</label>
+              <select 
+                v-model="store.selectedCity" 
+                class="w-full text-xs font-medium text-charcoal bg-transparent focus:outline-none cursor-pointer truncate">
+                <option value="Todas">Todas las ciudades</option>
+                <option value="San Pedro Sula">San Pedro Sula, Cortés</option>
+                <option value="Tegucigalpa">Tegucigalpa, F.M.</option>
+              </select>
+            </div>
+
+            <!-- Segmento 2: Búsqueda libre -->
+            <div class="flex-[1.5] px-4 py-1">
+              <label class="block text-[10px] uppercase font-bold text-charcoal tracking-wider">Artículo</label>
+              <input 
+                v-model="store.searchQuery" 
+                type="text" 
+                placeholder="Sofás, refrigeradoras, sillas..." 
+                class="w-full text-xs text-charcoal placeholder-charcoal-light bg-transparent focus:outline-none truncate">
+            </div>
+
+            <!-- Botón Buscar Circular Forest Green -->
+            <div class="pl-2 pr-1">
+              <button 
+                class="w-9 h-9 rounded-full bg-forest hover:bg-forest-hover text-white flex items-center justify-center transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                </svg>
+              </button>
+            </div>
+
+          </div>
+
+          <!-- Botón de Mis Alquileres -->
           <button 
             @click="store.showMyRentalsModal = true" 
-            class="relative bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 text-xs font-bold px-3 py-1.5 rounded-xl flex items-center space-x-1.5 transition">
-            <span>📦</span>
-            <span>Mis Alquileres</span>
-            <span v-if="store.myRentalsCount > 0" class="w-5 h-5 bg-emerald-600 text-white rounded-full text-[10px] flex items-center justify-center font-bold">
+            class="flex items-center space-x-2 px-4 py-2 rounded-full border border-surface-border text-xs font-semibold text-charcoal hover:bg-surface-subtle transition-colors shrink-0">
+            <svg class="w-4 h-4 text-forest" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+            </svg>
+            <span>Mis alquileres</span>
+            <span v-if="store.myRentalsCount > 0" class="w-5 h-5 bg-forest text-white rounded-full text-[10px] flex items-center justify-center font-bold">
               {{ store.myRentalsCount }}
             </span>
           </button>
+
         </div>
 
-        <!-- Barra de Búsqueda y Selector de Ciudad -->
-        <div class="flex flex-col sm:flex-row gap-2">
-          <div class="relative flex-1">
-            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">🔍</span>
-            <input 
-              v-model="store.searchQuery" 
-              type="text" 
-              placeholder="Buscar sofás, refrigeradoras, sillas tiffany..." 
-              class="w-full pl-9 pr-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 transition">
-          </div>
-
-          <!-- Selector de Ciudad -->
-          <select 
-            v-model="store.selectedCity" 
-            class="text-xs bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-medium text-slate-700 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
-            <option value="Todas">📍 Todas las Ciudades</option>
-            <option value="San Pedro Sula">San Pedro Sula (SPS)</option>
-            <option value="Tegucigalpa">Tegucigalpa (TGU)</option>
-          </select>
-        </div>
-
-        <!-- Pills de Categorías -->
-        <div class="flex items-center space-x-2 overflow-x-auto pt-3 pb-1 no-scrollbar text-xs">
+        <!-- Filtro de Categorías con Línea de Acento -->
+        <div class="max-w-5xl mx-auto flex items-center space-x-6 overflow-x-auto pt-5 pb-1 no-scrollbar">
           <button 
             v-for="cat in store.categories" 
             :key="cat.name"
             @click="store.selectedCategory = cat.name"
-            :class="store.selectedCategory === cat.name ? 'bg-slate-900 text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'"
-            class="px-3 py-1.5 rounded-full font-semibold whitespace-nowrap transition flex items-center space-x-1">
-            <span>{{ cat.icon }}</span>
+            :class="store.selectedCategory === cat.name ? 'border-forest text-forest font-semibold' : 'border-transparent text-charcoal-muted hover:text-charcoal hover:border-neutral-300 font-medium'"
+            class="pb-2.5 border-b-2 text-xs whitespace-nowrap transition-all duration-150 flex items-center space-x-2">
             <span>{{ cat.name }}</span>
           </button>
         </div>
-      </div>
+      </section>
 
-      <!-- Banner Informativo de Logística Gestionada -->
-      <div class="p-4">
-        <div class="bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 rounded-2xl p-4 text-white shadow-md relative overflow-hidden">
-          <div class="relative z-10 max-w-sm">
-            <span class="bg-white/20 text-white text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full backdrop-blur-xs">Logística Gestionada</span>
-            <h2 class="text-base font-extrabold mt-1">Nosotros recogemos y te lo llevamos a la puerta</h2>
-            <p class="text-xs text-emerald-100 mt-1">Con garantía reembolsable y transporte coordinado por MobiRent.</p>
+      <!-- Banner de Confianza y Logística Gestionada -->
+      <section class="max-w-7xl mx-auto px-4 sm:px-8 py-4 w-full">
+        <div class="bg-surface-subtle rounded-2xl border border-surface-border p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div class="flex items-center space-x-3.5">
+            <div class="w-10 h-10 rounded-xl bg-forest-light border border-forest-border flex items-center justify-center text-forest shrink-0">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+              </svg>
+            </div>
+            <div>
+              <h3 class="text-xs font-bold text-charcoal tracking-tight">Operación logística centralizada por MobiRent</h3>
+              <p class="text-xs text-charcoal-muted mt-0.5">Recogida e inspección en origen, entrega programada a domicilio y resguardo seguro del depósito de garantía.</p>
+            </div>
           </div>
-          <div class="absolute -right-4 -bottom-6 text-7xl opacity-20 pointer-events-none">🚚</div>
+          <span class="text-[11px] font-semibold text-forest bg-white px-3 py-1.5 rounded-full border border-forest-border shrink-0 self-end sm:self-auto">
+            Logística gestionada
+          </span>
         </div>
-      </div>
+      </section>
 
-      <!-- Catálogo de Artículos -->
-      <div class="px-4 pb-12">
-        <div class="flex items-center justify-between mb-3">
-          <h2 class="text-sm font-bold text-slate-800">
-            Artículos disponibles ({{ store.filteredItems.length }})
+      <!-- Cuadrícula de Artículos (Cards Estilo Airbnb) -->
+      <section class="max-w-7xl mx-auto px-4 sm:px-8 py-4 pb-16 w-full flex-1">
+        
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-sm font-semibold text-charcoal">
+            {{ store.filteredItems.length }} {{ store.filteredItems.length === 1 ? 'artículo disponible' : 'artículos disponibles' }}
           </h2>
-          <span class="text-xs text-slate-400">Precios en Lempiras (HNL)</span>
+          <span class="text-xs text-charcoal-muted">Tarifas en Lempiras hondureños (HNL)</span>
         </div>
 
-        <!-- Grid de Productos -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          <div 
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6 sm:gap-7">
+          <article 
             v-for="item in store.filteredItems" 
             :key="item.id"
-            class="bg-white rounded-2xl border border-slate-200/90 shadow-xs hover:shadow-md transition overflow-hidden flex flex-col group">
+            class="group cursor-pointer flex flex-col"
+            @click="store.openItemDetail(item)">
             
-            <!-- Imagen y Etiquetas -->
-            <div class="relative h-44 bg-slate-100 overflow-hidden cursor-pointer" @click="store.openItemDetail(item)">
+            <!-- Fotografía Principal con Relación de Aspecto Fija -->
+            <div class="relative aspect-[4/3] rounded-2xl overflow-hidden bg-neutral-100 border border-surface-border">
               <img 
                 :src="item.image" 
                 :alt="item.title"
-                class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
-              <div class="absolute top-2.5 left-2.5 flex flex-col gap-1">
-                <span class="bg-white/90 backdrop-blur-md text-slate-800 text-[10px] font-bold px-2 py-0.5 rounded-md shadow-xs">
-                  {{ item.category }}
-                </span>
-                <span class="bg-emerald-600/90 text-white text-[10px] font-bold px-2 py-0.5 rounded-md shadow-xs">
-                  {{ item.condition }}
-                </span>
+                loading="lazy"
+                class="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-300 ease-out">
+              
+              <!-- Etiqueta de Condición -->
+              <div class="absolute top-3 left-3 bg-white/95 backdrop-blur-sm text-charcoal text-[11px] font-semibold px-2.5 py-1 rounded-md shadow-sm border border-neutral-200/80">
+                {{ item.condition }}
               </div>
-              <div class="absolute top-2.5 right-2.5 bg-black/60 text-white text-[10px] font-semibold px-2 py-0.5 rounded-full flex items-center space-x-1">
-                <span>📍</span>
-                <span>{{ item.city }}</span>
+
+              <!-- Ciudad -->
+              <div class="absolute bottom-3 left-3 bg-black/60 backdrop-blur-sm text-white text-[11px] font-medium px-2.5 py-1 rounded-md">
+                {{ item.city }}
               </div>
             </div>
 
-            <!-- Información del Artículo -->
-            <div class="p-3.5 flex-1 flex flex-col justify-between">
+            <!-- Metadatos de la Tarjeta -->
+            <div class="pt-3 flex flex-col flex-1 justify-between">
               <div>
-                <div class="flex items-center justify-between mb-1">
-                  <span class="text-[11px] text-slate-400">Dueño: {{ item.ownerName }}</span>
-                  <span class="text-xs font-bold text-amber-500 flex items-center">
-                    ★ {{ item.rating }} <span class="text-[10px] text-slate-400 font-normal ml-0.5">({{ item.reviewsCount }})</span>
+                <div class="flex items-center justify-between text-xs text-charcoal-muted mb-1">
+                  <span>{{ item.neighborhood || item.city }}</span>
+                  <span class="flex items-center space-x-1 font-semibold text-charcoal">
+                    <svg class="w-3.5 h-3.5 text-charcoal fill-current" viewBox="0 0 20 20">
+                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                    </svg>
+                    <span>{{ item.rating }}</span>
+                    <span class="font-normal text-charcoal-muted">({{ item.reviewsCount }})</span>
                   </span>
                 </div>
-                <h3 
-                  @click="store.openItemDetail(item)"
-                  class="font-bold text-slate-900 text-sm hover:text-emerald-600 transition cursor-pointer line-clamp-1">
+
+                <h3 class="text-sm font-semibold text-charcoal leading-snug group-hover:text-forest transition-colors line-clamp-1">
                   {{ item.title }}
                 </h3>
-                <p class="text-xs text-slate-500 mt-1 line-clamp-2">{{ item.description }}</p>
+                <p class="text-xs text-charcoal-muted mt-1 line-clamp-1">
+                  Propietario: {{ item.ownerName }}
+                </p>
               </div>
 
-              <!-- Precios y Botón Alquilar -->
-              <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
+              <!-- Tarifa Diaria / Llamada a Acción -->
+              <div class="mt-3 pt-2 flex items-baseline justify-between border-t border-surface-border">
                 <div>
-                  <span class="text-[10px] text-slate-400 uppercase font-semibold block">Desde</span>
-                  <div class="flex items-baseline space-x-1">
-                    <span class="text-base font-extrabold text-slate-900">L. {{ item.priceDay }}</span>
-                    <span class="text-[10px] text-slate-500">/día</span>
-                  </div>
+                  <span class="text-sm font-bold text-charcoal tracking-tight">L {{ item.priceDay }}</span>
+                  <span class="text-xs text-charcoal-muted font-normal ml-1">/ día</span>
                 </div>
-
-                <button 
-                  @click="store.openItemDetail(item)"
-                  class="bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white px-3.5 py-1.5 rounded-xl text-xs font-bold shadow-xs transition flex items-center space-x-1">
-                  <span>Alquilar</span>
-                  <span>→</span>
-                </button>
+                <span class="text-xs font-semibold text-forest group-hover:underline">
+                  Consultar reserva
+                </span>
               </div>
 
             </div>
 
+          </article>
+        </div>
+
+        <!-- Sin resultados -->
+        <div v-if="store.filteredItems.length === 0" class="text-center py-16">
+          <div class="w-12 h-12 rounded-full bg-surface-subtle border border-surface-border mx-auto flex items-center justify-center text-charcoal-muted mb-3">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            </svg>
           </div>
+          <p class="text-sm font-semibold text-charcoal">No hay artículos que coincidan con estos criterios</p>
+          <p class="text-xs text-charcoal-muted mt-1">Pruebe ajustando el término de búsqueda o seleccionando todas las ciudades.</p>
         </div>
 
-        <!-- Estado vacío si no hay resultados -->
-        <div v-if="store.filteredItems.length === 0" class="text-center py-12">
-          <span class="text-4xl block mb-2">🔍</span>
-          <p class="text-sm font-semibold text-slate-700">No encontramos artículos para esa búsqueda</p>
-          <p class="text-xs text-slate-400 mt-1">Prueba cambiando la ciudad o la categoría seleccionada.</p>
-        </div>
-
-      </div>
+      </section>
 
     </div>
   `,

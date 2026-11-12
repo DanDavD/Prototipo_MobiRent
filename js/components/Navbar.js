@@ -2,74 +2,75 @@
  * ==============================================================
  * Componente: Navbar (js/components/Navbar.js)
  * ==============================================================
- * Barra de navegación principal: control de roles, selector de
- * pantalla (móvil/escritorio) y restablecimiento de datos.
+ * Barra de navegación inspirada en el lenguaje de diseño de Airbnb:
+ * fondo blanco nítido, micro-interacciones sutiles, control
+ * segmentado de roles e iconografía lineal sin emojis.
  */
 
 window.NavbarComponent = {
   template: `
-    <header class="bg-slate-900 text-white sticky top-0 z-50 shadow-md border-b border-slate-800">
-      <div class="max-w-7xl mx-auto px-4 py-2.5 flex flex-wrap items-center justify-between gap-3">
+    <header class="bg-white border-b border-surface-border sticky top-0 z-40">
+      <div class="max-w-7xl mx-auto px-4 sm:px-8 py-3.5 flex items-center justify-between gap-4">
         
-        <!-- Logo y Badges -->
-        <div class="flex items-center space-x-3 cursor-pointer" @click="store.activeRole = 'renter'">
-          <div class="w-9 h-9 bg-gradient-to-tr from-emerald-500 to-teal-400 rounded-xl flex items-center justify-center font-black text-xl text-white shadow-lg shadow-emerald-500/20">
-            M
+        <!-- Logotipo / Identidad de Marca -->
+        <div 
+          class="flex items-center space-x-2.5 cursor-pointer select-none" 
+          @click="store.activeRole = 'renter'">
+          <div class="w-8 h-8 rounded-lg bg-forest flex items-center justify-center text-white transition-transform duration-200 active:scale-95">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+            </svg>
           </div>
           <div>
-            <div class="flex items-center space-x-2">
-              <span class="font-extrabold text-lg tracking-tight bg-gradient-to-r from-white via-slate-100 to-emerald-300 bg-clip-text text-transparent">MobiRent</span>
-              <span class="text-[10px] uppercase font-bold tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded-full">Honduras</span>
+            <div class="flex items-center space-x-1.5">
+              <span class="font-bold text-base tracking-tight text-charcoal">mobirent</span>
+              <span class="text-[10px] uppercase font-semibold tracking-wider text-charcoal-muted border border-surface-border px-1.5 py-0.5 rounded">Honduras</span>
             </div>
-            <p class="text-[11px] text-slate-400 hidden sm:block">Prototipo Interactivo • San Pedro Sula & Tegucigalpa</p>
           </div>
         </div>
 
-        <!-- Selector de Rol (Comprador / Vendedor / Admin) -->
-        <div class="flex items-center bg-slate-800 p-1 rounded-xl border border-slate-700/80 shadow-inner">
+        <!-- Selector de Perspectiva (Segmented Pill) -->
+        <nav class="flex items-center bg-surface-subtle p-1 rounded-full border border-surface-border">
           <button 
             @click="store.activeRole = 'renter'" 
-            :class="store.activeRole === 'renter' ? 'bg-emerald-500 text-white shadow-md' : 'text-slate-300 hover:text-white'"
-            class="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all">
-            <span>🛒</span>
-            <span class="hidden sm:inline">Comprador</span>
-            <span class="sm:hidden">Alquilar</span>
+            :class="store.activeRole === 'renter' ? 'bg-white text-charcoal shadow-sm' : 'text-charcoal-muted hover:text-charcoal'"
+            class="px-4 py-1.5 rounded-full text-xs font-semibold transition-all duration-150">
+            Arrendatario
           </button>
 
           <button 
             @click="store.activeRole = 'owner'" 
-            :class="store.activeRole === 'owner' ? 'bg-emerald-500 text-white shadow-md' : 'text-slate-300 hover:text-white'"
-            class="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all">
-            <span>🏷️</span>
-            <span class="hidden sm:inline">Vendedor / Dueño</span>
-            <span class="sm:hidden">Publicar</span>
+            :class="store.activeRole === 'owner' ? 'bg-white text-charcoal shadow-sm' : 'text-charcoal-muted hover:text-charcoal'"
+            class="px-4 py-1.5 rounded-full text-xs font-semibold transition-all duration-150">
+            Propietario
           </button>
 
           <button 
             @click="store.activeRole = 'admin'" 
-            :class="store.activeRole === 'admin' ? 'bg-emerald-500 text-white shadow-md' : 'text-slate-300 hover:text-white'"
-            class="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all">
-            <span>🛡️</span>
-            <span>Admin</span>
+            :class="store.activeRole === 'admin' ? 'bg-white text-charcoal shadow-sm' : 'text-charcoal-muted hover:text-charcoal'"
+            class="px-4 py-1.5 rounded-full text-xs font-semibold transition-all duration-150">
+            Operaciones
           </button>
-        </div>
+        </nav>
 
-        <!-- Simulador de Dispositivo (Modo Celular vs Pantalla Completa) -->
+        <!-- Utilidades: Simulador Móvil y Restablecimiento -->
         <div class="flex items-center space-x-2">
           <button 
             @click="store.toggleDeviceMode()"
-            :title="store.isMobileView ? 'Cambiar a Pantalla Completa' : 'Simular Pantalla de Celular'"
-            class="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition">
-            <span v-if="!store.isMobileView">📱 Modo Celular</span>
-            <span v-else>💻 Pantalla Completa</span>
+            class="flex items-center space-x-1.5 px-3 py-1.5 rounded-full text-xs font-medium text-charcoal border border-surface-border hover:border-charcoal transition-colors">
+            <svg class="w-3.5 h-3.5 text-charcoal-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+            </svg>
+            <span class="hidden sm:inline">{{ store.isMobileView ? 'Pantalla completa' : 'Vista móvil' }}</span>
           </button>
 
-          <!-- Botón Reiniciar Datos -->
           <button 
             @click="store.resetData()" 
-            title="Reiniciar datos de prueba"
-            class="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition text-xs">
-            🔄
+            title="Restablecer datos de prueba"
+            class="p-2 rounded-full text-charcoal-muted hover:text-charcoal hover:bg-surface-subtle transition-colors">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+            </svg>
           </button>
         </div>
 

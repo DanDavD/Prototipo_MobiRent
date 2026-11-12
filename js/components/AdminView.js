@@ -2,173 +2,182 @@
  * ==============================================================
  * Componente: AdminView (js/components/AdminView.js)
  * ==============================================================
- * Panel Central de MobiRent: monitoreo de ingresos de la plataforma,
- * garantías en custodia, tablero logístico interactivo en tiempo real,
- * auditoría de transacciones y moderación de catálogo.
+ * Centro de Operaciones de MobiRent: diseño limpio, sobrio y profesional.
+ * Supervisión de ingresos de plataforma, depósitos de garantía en custodia,
+ * trazabilidad logística en tiempo real y moderación de catálogo.
  */
 
 window.AdminViewComponent = {
   template: `
-    <div class="flex flex-col min-h-full bg-slate-900 text-slate-100">
+    <div class="flex flex-col min-h-full bg-white">
       
-      <!-- Header del Admin y KPIs Globales -->
-      <div class="bg-slate-950 p-4 border-b border-slate-800">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <!-- Encabezado de Operaciones -->
+      <header class="border-b border-surface-border bg-white px-4 sm:px-8 py-6">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <div class="flex items-center space-x-2">
-              <span class="w-3 h-3 bg-emerald-500 rounded-full animate-pulse"></span>
-              <h1 class="text-xl font-black text-white tracking-tight">Panel Central MobiRent</h1>
-              <span class="bg-slate-800 text-emerald-400 text-[10px] font-mono px-2 py-0.5 rounded border border-slate-700">MOBI-OPS v1.0</span>
+            <div class="flex items-center space-x-2.5">
+              <h1 class="text-xl font-bold tracking-tight text-charcoal">Centro de Operaciones MobiRent</h1>
+              <span class="text-[11px] font-semibold text-charcoal-muted bg-surface-subtle border border-surface-border px-2 py-0.5 rounded">
+                Versión 1.2
+              </span>
             </div>
-            <p class="text-xs text-slate-400">Control de operaciones, pagos de clientes, liquidaciones y logística en Honduras</p>
+            <p class="text-xs text-charcoal-muted mt-1">Supervisión logística, intermediación financiera y custodia de garantías en Honduras.</p>
           </div>
 
-          <!-- Filtro de Región -->
           <div class="flex items-center space-x-2">
-            <span class="text-xs text-slate-400">Región:</span>
-            <select class="bg-slate-800 text-xs text-white border border-slate-700 rounded-lg px-2.5 py-1.5 focus:outline-none">
-              <option>Nacional (SPS y TGU)</option>
+            <span class="text-xs text-charcoal-muted font-medium">Cobertura:</span>
+            <select class="text-xs font-semibold text-charcoal bg-white border border-surface-border rounded-lg px-3 py-1.5 focus:outline-none">
+              <option>Nacional (San Pedro Sula & Tegucigalpa)</option>
               <option>San Pedro Sula</option>
               <option>Tegucigalpa</option>
             </select>
           </div>
         </div>
 
-        <!-- Tarjetas de Métricas del Negocio -->
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4">
-          <div class="bg-slate-900/90 border border-slate-800 p-3 rounded-xl">
-            <span class="text-[10px] uppercase font-bold text-slate-400">Margen MobiRent (Ingresos)</span>
-            <div class="text-lg font-black text-emerald-400">L. {{ store.adminMetrics.totalRevenue }}</div>
-            <span class="text-[10px] text-slate-500">Comisiones + Servicios cobrados</span>
+        <!-- Métricas del Negocio (Sobrias, sin gradientes) -->
+        <div class="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+          <div class="p-4 rounded-xl border border-surface-border bg-white">
+            <span class="text-[11px] font-medium text-charcoal-muted uppercase tracking-wider block">Margen MobiRent</span>
+            <div class="text-2xl font-bold text-forest mt-1">L {{ store.adminMetrics.totalRevenue }}</div>
+            <span class="text-[11px] text-charcoal-muted block mt-0.5">Comisiones netas por servicio</span>
           </div>
-          <div class="bg-slate-900/90 border border-slate-800 p-3 rounded-xl">
-            <span class="text-[10px] uppercase font-bold text-slate-400">Garantías en Custodia</span>
-            <div class="text-lg font-black text-amber-400">L. {{ store.adminMetrics.escrowDeposits }}</div>
-            <span class="text-[10px] text-amber-500/80">Reembolsables a clientes</span>
+
+          <div class="p-4 rounded-xl border border-surface-border bg-white">
+            <span class="text-[11px] font-medium text-charcoal-muted uppercase tracking-wider block">Garantías en custodia</span>
+            <div class="text-2xl font-bold text-charcoal mt-1">L {{ store.adminMetrics.escrowDeposits }}</div>
+            <span class="text-[11px] text-charcoal-muted block mt-0.5">Depósitos reembolsables retenidos</span>
           </div>
-          <div class="bg-slate-900/90 border border-slate-800 p-3 rounded-xl">
-            <span class="text-[10px] uppercase font-bold text-slate-400">Alquileres Activos</span>
-            <div class="text-lg font-black text-blue-400">{{ store.rentals.length }}</div>
-            <span class="text-[10px] text-slate-500">Transacciones gestionadas</span>
+
+          <div class="p-4 rounded-xl border border-surface-border bg-white">
+            <span class="text-[11px] font-medium text-charcoal-muted uppercase tracking-wider block">Alquileres activos</span>
+            <div class="text-2xl font-bold text-charcoal mt-1">{{ store.rentals.length }}</div>
+            <span class="text-[11px] text-charcoal-muted block mt-0.5">Transacciones gestionadas</span>
           </div>
-          <div class="bg-slate-900/90 border border-slate-800 p-3 rounded-xl">
-            <span class="text-[10px] uppercase font-bold text-slate-400">Viajes Logísticos</span>
-            <div class="text-lg font-black text-purple-400">{{ store.pendingDeliveriesCount }}</div>
-            <span class="text-[10px] text-purple-300">En ruta o por retirar</span>
+
+          <div class="p-4 rounded-xl border border-surface-border bg-white">
+            <span class="text-[11px] font-medium text-charcoal-muted uppercase tracking-wider block">Traslados en curso</span>
+            <div class="text-2xl font-bold text-charcoal mt-1">{{ store.pendingDeliveriesCount }}</div>
+            <span class="text-[11px] text-charcoal-muted block mt-0.5">Entregas y retiros programados</span>
           </div>
         </div>
-      </div>
+      </header>
 
-      <!-- Pestañas del Administrador -->
-      <div class="p-4 flex-1">
-        <div class="flex space-x-2 border-b border-slate-800 pb-2 mb-4">
+      <!-- Navegación por Módulos Operativos -->
+      <section class="max-w-7xl mx-auto px-4 sm:px-8 py-6 w-full flex-1">
+        
+        <div class="flex items-center space-x-6 border-b border-surface-border mb-6">
           <button 
             @click="store.adminTab = 'logistics'" 
-            :class="store.adminTab === 'logistics' ? 'text-emerald-400 border-b-2 border-emerald-400 font-bold' : 'text-slate-400 hover:text-white font-medium'"
-            class="text-xs pb-1.5 px-2 transition flex items-center space-x-1">
-            <span>🚚 Monitoreo Logístico y Envíos</span>
-            <span class="w-4 h-4 bg-purple-500 text-white rounded-full text-[9px] flex items-center justify-center font-bold">
+            :class="store.adminTab === 'logistics' ? 'border-forest text-forest font-semibold' : 'border-transparent text-charcoal-muted hover:text-charcoal font-medium'"
+            class="pb-3 border-b-2 text-xs transition-colors flex items-center space-x-2">
+            <span>Control logístico</span>
+            <span class="w-4 h-4 bg-forest text-white rounded-full text-[10px] flex items-center justify-center font-bold">
               {{ store.pendingDeliveriesCount }}
             </span>
           </button>
+
           <button 
             @click="store.adminTab = 'orders'" 
-            :class="store.adminTab === 'orders' ? 'text-emerald-400 border-b-2 border-emerald-400 font-bold' : 'text-slate-400 hover:text-white font-medium'"
-            class="text-xs pb-1.5 px-2 transition">
-            📑 Todas las Reservas y Finanzas
+            :class="store.adminTab === 'orders' ? 'border-forest text-forest font-semibold' : 'border-transparent text-charcoal-muted hover:text-charcoal font-medium'"
+            class="pb-3 border-b-2 text-xs transition-colors">
+            Registro financiero y órdenes
           </button>
+
           <button 
             @click="store.adminTab = 'catalog'" 
-            :class="store.adminTab === 'catalog' ? 'text-emerald-400 border-b-2 border-emerald-400 font-bold' : 'text-slate-400 hover:text-white font-medium'"
-            class="text-xs pb-1.5 px-2 transition">
-            🪑 Catálogo y Moderación
+            :class="store.adminTab === 'catalog' ? 'border-forest text-forest font-semibold' : 'border-transparent text-charcoal-muted hover:text-charcoal font-medium'"
+            class="pb-3 border-b-2 text-xs transition-colors">
+            Moderación de inventario
           </button>
         </div>
 
-        <!-- TAB 1: Monitoreo Logístico Interactivo -->
+        <!-- MÓDULO 1: Monitoreo Logístico Interactivo -->
         <div v-if="store.adminTab === 'logistics'" class="space-y-4">
-          <div class="bg-slate-800/80 p-3 rounded-xl border border-slate-700 flex items-center justify-between">
+          
+          <div class="p-4 rounded-xl border border-surface-border bg-surface-subtle flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
-              <h3 class="text-xs font-bold text-white">Flujo de Estados Logísticos Gestionados por MobiRent</h3>
-              <p class="text-[11px] text-slate-400">Haz clic en los botones para avanzar el estado de transporte de cada alquiler en tiempo real.</p>
+              <h3 class="text-xs font-bold text-charcoal">Flujo de Estados Logísticos Gestionados</h3>
+              <p class="text-xs text-charcoal-muted mt-0.5">Haga clic en los estados para coordinar la recogida, entrega física y eventual devolución del artículo.</p>
             </div>
-            <span class="text-[10px] bg-slate-900 px-2.5 py-1 rounded-full text-slate-300 font-mono">
-              Logística: MANAGED
+            <span class="text-[11px] font-semibold text-charcoal bg-white border border-surface-border px-3 py-1 rounded-full self-start sm:self-auto">
+              Operación gestionada
             </span>
           </div>
 
-          <!-- Lista de Pedidos Logísticos -->
-          <div class="space-y-3">
+          <!-- Listado de Envíos en Curso -->
+          <div class="space-y-4">
             <div 
               v-for="rental in store.rentals" 
               :key="rental.id"
-              class="bg-slate-950 p-4 rounded-xl border border-slate-800 hover:border-slate-700 transition">
+              class="p-5 rounded-2xl border border-surface-border bg-white shadow-airbnb">
               
-              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-2 mb-3">
-                <div class="flex items-center space-x-2">
-                  <span class="font-mono text-xs text-emerald-400 font-bold">#ORD-{{ rental.id }}</span>
-                  <span class="text-xs font-bold text-white">{{ rental.itemTitle }}</span>
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-surface-border">
+                <div class="flex items-center space-x-3">
+                  <span class="text-xs font-mono font-bold text-forest bg-forest-light px-2 py-0.5 rounded border border-forest-border">
+                    #ORD-{{ rental.id }}
+                  </span>
+                  <h4 class="text-sm font-bold text-charcoal">{{ rental.itemTitle }}</h4>
                 </div>
                 
-                <!-- Badge de Estado Actual -->
                 <div class="flex items-center space-x-2">
-                  <span class="text-[10px] text-slate-400">Estado actual:</span>
+                  <span class="text-xs text-charcoal-muted">Estado operativo:</span>
                   <span 
                     :class="store.getAdminBadgeClass(rental.status)"
-                    class="text-[10px] font-mono font-bold px-2.5 py-1 rounded-md uppercase">
+                    class="text-[11px] font-semibold px-2.5 py-1 rounded-full">
                     {{ rental.status }}
                   </span>
                 </div>
               </div>
 
-              <!-- Direcciones de Recogida y Entrega -->
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-slate-300 mb-3 bg-slate-900/70 p-3 rounded-lg border border-slate-800/80">
-                <div>
-                  <span class="text-[10px] uppercase font-bold text-slate-500 block">1. Origen (Dirección del Dueño)</span>
-                  <p class="font-semibold text-white">{{ rental.ownerName }}</p>
-                  <p class="text-[11px] text-slate-400">📍 {{ rental.pickupAddress || 'Col. Trejo, San Pedro Sula' }}</p>
+              <!-- Direcciones de Origen y Destino -->
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4 py-4 text-xs text-charcoal">
+                <div class="p-3.5 rounded-xl border border-surface-border bg-surface-subtle">
+                  <span class="text-[10px] uppercase font-bold text-charcoal-muted block tracking-wider">1. Origen (Dirección del Arrendador)</span>
+                  <p class="font-semibold text-charcoal mt-1">{{ rental.ownerName }}</p>
+                  <p class="text-charcoal-muted mt-0.5">{{ rental.pickupAddress }}</p>
                 </div>
-                <div>
-                  <span class="text-[10px] uppercase font-bold text-slate-500 block">2. Destino (Dirección del Cliente)</span>
-                  <p class="font-semibold text-white">{{ rental.renterName }} (Tel: {{ rental.renterPhone || '+504 9988-1122' }})</p>
-                  <p class="text-[11px] text-slate-400">📍 {{ rental.deliveryAddress }}</p>
+
+                <div class="p-3.5 rounded-xl border border-surface-border bg-surface-subtle">
+                  <span class="text-[10px] uppercase font-bold text-charcoal-muted block tracking-wider">2. Destino (Dirección del Arrendatario)</span>
+                  <p class="font-semibold text-charcoal mt-1">{{ rental.renterName }} · {{ rental.renterPhone }}</p>
+                  <p class="text-charcoal-muted mt-0.5">{{ rental.deliveryAddress }}</p>
                 </div>
               </div>
 
-              <!-- Controles Interactivos de Estado Logístico -->
-              <div class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-800/60">
-                <span class="text-[11px] text-slate-400 font-medium">Avanzar estado operativo:</span>
+              <!-- Botones de Transición de Estado -->
+              <div class="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-surface-border">
+                <span class="text-xs font-medium text-charcoal-muted">Actualizar estado en tiempo real:</span>
 
-                <div class="flex flex-wrap gap-1.5">
+                <div class="flex flex-wrap gap-2">
                   <button 
-                    @click="store.setRentalStatus(rental.id, 'ASIGNADA')"
-                    :disabled="rental.status === 'ASIGNADA'"
-                    class="text-[11px] px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition disabled:opacity-30">
-                    1. Asignar Chofer
+                    @click="store.setRentalStatus(rental.id, 'Asignado')"
+                    :disabled="rental.status === 'Asignado'"
+                    class="text-xs px-3 py-1.5 rounded-full border border-surface-border text-charcoal font-medium hover:bg-surface-subtle disabled:opacity-40 transition-colors">
+                    1. Asignar transportista
                   </button>
                   <button 
-                    @click="store.setRentalStatus(rental.id, 'EN RECOGIDA')"
-                    :disabled="rental.status === 'EN RECOGIDA'"
-                    class="text-[11px] px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition disabled:opacity-30">
-                    2. En Recogida
+                    @click="store.setRentalStatus(rental.id, 'En recogida')"
+                    :disabled="rental.status === 'En recogida'"
+                    class="text-xs px-3 py-1.5 rounded-full border border-surface-border text-charcoal font-medium hover:bg-surface-subtle disabled:opacity-40 transition-colors">
+                    2. En recogida
                   </button>
                   <button 
-                    @click="store.setRentalStatus(rental.id, 'EN TRÁNSITO')"
-                    :disabled="rental.status === 'EN TRÁNSITO'"
-                    class="text-[11px] px-2.5 py-1 rounded bg-blue-900/50 hover:bg-blue-800 text-blue-200 border border-blue-700 transition disabled:opacity-30">
-                    3. En Tránsito
+                    @click="store.setRentalStatus(rental.id, 'En tránsito')"
+                    :disabled="rental.status === 'En tránsito'"
+                    class="text-xs px-3 py-1.5 rounded-full bg-forest text-white font-medium hover:bg-forest-hover disabled:opacity-40 transition-colors">
+                    3. En tránsito
                   </button>
                   <button 
-                    @click="store.setRentalStatus(rental.id, 'ENTREGADA')"
-                    :disabled="rental.status === 'ENTREGADA'"
-                    class="text-[11px] px-2.5 py-1 rounded bg-emerald-900/50 hover:bg-emerald-800 text-emerald-200 border border-emerald-700 transition disabled:opacity-30">
-                    4. Entregada ✓
+                    @click="store.setRentalStatus(rental.id, 'Entregado')"
+                    :disabled="rental.status === 'Entregado'"
+                    class="text-xs px-3 py-1.5 rounded-full bg-neutral-900 text-white font-medium hover:bg-neutral-800 disabled:opacity-40 transition-colors">
+                    4. Confirmar entrega
                   </button>
                   <button 
-                    @click="store.setRentalStatus(rental.id, 'DEVUELTA')"
-                    :disabled="rental.status === 'DEVUELTA'"
-                    class="text-[11px] px-2.5 py-1 rounded bg-purple-900/50 hover:bg-purple-800 text-purple-200 border border-purple-700 transition disabled:opacity-30">
-                    5. Devolución & Garantía
+                    @click="store.setRentalStatus(rental.id, 'Devuelto')"
+                    :disabled="rental.status === 'Devuelto'"
+                    class="text-xs px-3 py-1.5 rounded-full border border-neutral-300 text-charcoal font-medium hover:bg-neutral-100 disabled:opacity-40 transition-colors">
+                    5. Devolución y reembolso
                   </button>
                 </div>
               </div>
@@ -178,67 +187,66 @@ window.AdminViewComponent = {
 
         </div>
 
-        <!-- TAB 2: Finanzas y Reservas Totales -->
-        <div v-if="store.adminTab === 'orders'" class="space-y-3">
-          <div class="bg-slate-950 p-4 rounded-xl border border-slate-800">
-            <h3 class="text-xs font-bold text-white mb-2 uppercase tracking-wide">Desglose Transaccional Completo</h3>
-            <div class="overflow-x-auto">
-              <table class="w-full text-left text-xs text-slate-300">
-                <thead class="bg-slate-900 text-slate-400 uppercase text-[10px] font-bold">
-                  <tr>
-                    <th class="p-2.5">ID / Artículo</th>
-                    <th class="p-2.5">Cliente</th>
-                    <th class="p-2.5">Pago Cliente</th>
-                    <th class="p-2.5">Pago Dueño</th>
-                    <th class="p-2.5">Logística</th>
-                    <th class="p-2.5">Margen MobiRent</th>
-                    <th class="p-2.5">Garantía</th>
-                  </tr>
-                </thead>
-                <tbody class="divide-y divide-slate-800">
-                  <tr v-for="r in store.rentals" :key="r.id">
-                    <td class="p-2.5">
-                      <span class="font-mono text-emerald-400 block font-bold">#{{ r.id }}</span>
-                      <span class="text-white">{{ r.itemTitle }}</span>
-                    </td>
-                    <td class="p-2.5">{{ r.renterName }}</td>
-                    <td class="p-2.5 font-bold text-white">L. {{ r.totalPaid }}</td>
-                    <td class="p-2.5 text-slate-300">L. {{ r.ownerPayout }}</td>
-                    <td class="p-2.5 text-slate-400">L. {{ r.transportFee }}</td>
-                    <td class="p-2.5 font-extrabold text-emerald-400">L. {{ r.serviceFee }}</td>
-                    <td class="p-2.5 text-amber-400 font-semibold">L. {{ r.deposit }}</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+        <!-- MÓDULO 2: Registro Financiero -->
+        <div v-if="store.adminTab === 'orders'" class="p-6 rounded-2xl border border-surface-border bg-white">
+          <h3 class="text-sm font-bold text-charcoal mb-4">Registro Transaccional y Liquidación</h3>
+          
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-surface-subtle text-charcoal-muted uppercase text-[10px] font-bold border-y border-surface-border">
+                <tr>
+                  <th class="p-3">Referencia</th>
+                  <th class="p-3">Arrendatario</th>
+                  <th class="p-3">Cobro total</th>
+                  <th class="p-3">Pago al dueño</th>
+                  <th class="p-3">Flete logístico</th>
+                  <th class="p-3">Margen MobiRent</th>
+                  <th class="p-3">Depósito retenido</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-surface-border">
+                <tr v-for="r in store.rentals" :key="r.id" class="hover:bg-surface-subtle/50">
+                  <td class="p-3 font-medium">
+                    <span class="font-mono text-forest font-semibold block">#{{ r.id }}</span>
+                    <span class="text-charcoal">{{ r.itemTitle }}</span>
+                  </td>
+                  <td class="p-3 text-charcoal">{{ r.renterName }}</td>
+                  <td class="p-3 font-bold text-charcoal">L {{ r.totalPaid }}</td>
+                  <td class="p-3 text-charcoal-muted">L {{ r.ownerPayout }}</td>
+                  <td class="p-3 text-charcoal-muted">L {{ r.transportFee }}</td>
+                  <td class="p-3 font-bold text-forest">L {{ r.serviceFee }}</td>
+                  <td class="p-3 font-semibold text-charcoal">L {{ r.deposit }}</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
 
-        <!-- TAB 3: Moderación de Catálogo -->
+        <!-- MÓDULO 3: Moderación de Catálogo -->
         <div v-if="store.adminTab === 'catalog'" class="space-y-3">
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div 
               v-for="item in store.items" 
               :key="item.id"
-              class="bg-slate-950 p-3 rounded-xl border border-slate-800 flex items-center justify-between">
-              <div class="flex items-center space-x-3">
-                <img :src="item.image" class="w-12 h-12 rounded-lg object-cover">
+              class="p-4 rounded-xl border border-surface-border bg-white flex items-center justify-between gap-3">
+              <div class="flex items-center space-x-3.5">
+                <img :src="item.image" :alt="item.title" class="w-14 h-14 rounded-xl object-cover border border-surface-border shrink-0">
                 <div>
-                  <h4 class="text-xs font-bold text-white">{{ item.title }}</h4>
-                  <p class="text-[11px] text-slate-400">{{ item.category }} • {{ item.city }} • Dueño: {{ item.ownerName }}</p>
-                  <span class="text-xs font-extrabold text-emerald-400">L. {{ item.priceDay }} /día</span>
+                  <h4 class="text-xs font-semibold text-charcoal line-clamp-1">{{ item.title }}</h4>
+                  <p class="text-[11px] text-charcoal-muted mt-0.5">{{ item.category }} · {{ item.city }}</p>
+                  <p class="text-xs font-bold text-forest mt-1">L {{ item.priceDay }} / día</p>
                 </div>
               </div>
               <button 
                 @click="store.deleteItem(item.id)"
-                class="text-xs text-red-400 hover:text-red-300 p-2 hover:bg-slate-900 rounded-lg">
-                Eliminar
+                class="text-xs text-charcoal-muted hover:text-red-700 px-3 py-1.5 rounded-full border border-surface-border hover:border-red-200 hover:bg-red-50 transition-colors">
+                Retirar
               </button>
             </div>
           </div>
         </div>
 
-      </div>
+      </section>
 
     </div>
   `,
