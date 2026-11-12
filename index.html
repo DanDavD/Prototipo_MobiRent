@@ -1,0 +1,1733 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MobiRent Honduras - Prototipo Interactivo</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Vue 3 CDN con Fallback -->
+  <script src="https://cdn.jsdelivr.net/npm/vue@3.4.21/dist/vue.global.prod.js"></script>
+  <script>
+    if (typeof Vue === 'undefined') {
+      document.write('<script src="https://unpkg.com/vue@3/dist/vue.global.js"><\/script>');
+    }
+  </script>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#f0fdf4',
+              100: '#dcfce7',
+              500: '#10b981',
+              600: '#059669',
+              700: '#047857',
+              800: '#065f46',
+              900: '#064e3b',
+            },
+            accent: {
+              500: '#3b82f6',
+              600: '#2563eb',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Custom scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+    .mobile-frame-wrapper {
+      max-width: 430px;
+      margin: 0 auto;
+      border: 12px solid #1e293b;
+      border-radius: 46px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
+      overflow: hidden;
+      min-height: 860px;
+      position: relative;
+      background: #f8fafc;
+    }
+    .mobile-notch {
+      width: 140px;
+      height: 22px;
+      background: #1e293b;
+      margin: 0 auto;
+      border-bottom-left-radius: 14px;
+      border-bottom-right-radius: 14px;
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 50;
+    }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-800 font-sans antialiased min-h-screen">
+
+<div id="app" class="min-h-screen flex flex-col">
+
+  <!-- TOP BAR DE CONTROL DEL PROTOTIPO (Barra de presentación) -->
+  <header class="bg-slate-900 text-white sticky top-0 z-50 shadow-md border-b border-slate-800">
+    <div class="max-w-7xl mx-auto px-4 py-2.5 flex flex-wrap items-center justify-between gap-3">
+      
+      <!-- Logo y Badges -->
+      <div class="flex items-center space-x-3">
+        <div class="w-9 h-9 bg-gradient-to-tr from-emerald-500 to-teal-400 rounded-xl flex items-center justify-center font-black text-xl text-white shadow-lg shadow-emerald-500/20">
+          M
+        </div>
+        <div>
+          <div class="flex items-center space-x-2">
+            <span class="font-extrabold text-lg tracking-tight bg-gradient-to-r from-white via-slate-100 to-emerald-300 bg-clip-text text-transparent">MobiRent</span>
+            <span class="text-[10px] uppercase font-bold tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded-full">Honduras</span>
+          </div>
+          <p class="text-[11px] text-slate-400 hidden sm:block">Prototipo Interactivo de Clase • 100% Clickeable</p>
+        </div>
+      </div>
+
+      <!-- Selector de Rol (Vendedor / Comprador / Admin) -->
+      <div class="flex items-center bg-slate-800 p-1 rounded-xl border border-slate-700/80 shadow-inner">
+        <button 
+          @click="activeRole = 'renter'" 
+          :class="activeRole === 'renter' ? 'bg-emerald-500 text-white shadow-md' : 'text-slate-300 hover:text-white'"
+          class="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all">
+          <span>🛒</span>
+          <span class="hidden sm:inline">Comprador</span>
+          <span class="sm:hidden">Alquilar</span>
+        </button>
+
+        <button 
+          @click="activeRole = 'owner'" 
+          :class="activeRole === 'owner' ? 'bg-emerald-500 text-white shadow-md' : 'text-slate-300 hover:text-white'"
+          class="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all">
+          <span>🏷️</span>
+          <span class="hidden sm:inline">Vendedor / Dueño</span>
+          <span class="sm:hidden">Publicar</span>
+        </button>
+
+        <button 
+          @click="activeRole = 'admin'" 
+          :class="activeRole === 'admin' ? 'bg-emerald-500 text-white shadow-md' : 'text-slate-300 hover:text-white'"
+          class="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all">
+          <span>🛡️</span>
+          <span>Admin</span>
+        </button>
+      </div>
+
+      <!-- Simulador de Dispositivo (Modo Celular vs Pantalla Completa) -->
+      <div class="flex items-center space-x-2">
+        <button 
+          @click="toggleDeviceMode"
+          :title="isMobileView ? 'Cambiar a Pantalla Completa' : 'Simular Pantalla de Celular'"
+          class="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition">
+          <span v-if="!isMobileView">📱 Modo Celular</span>
+          <span v-else>💻 Modo Pantalla Completa</span>
+        </button>
+
+        <!-- Botón Reiniciar Datos -->
+        <button 
+          @click="resetData" 
+          title="Reiniciar datos de prueba"
+          class="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition text-xs">
+          🔄
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- CONTENEDOR PRINCIPAL: Soporta Vista de Celular Simulada o Vista Fluida Normal -->
+  <main class="flex-1 py-4 sm:py-6" :class="isMobileView ? 'bg-slate-900/90 py-8 px-4 flex justify-center items-start' : 'max-w-7xl w-full mx-auto px-4'">
+    
+    <div :class="isMobileView ? 'mobile-frame-wrapper w-full' : 'w-full bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden'">
+      <div v-if="isMobileView" class="mobile-notch"></div>
+
+      <!-- ============================================================== -->
+      <!-- VISTA 1: ARRENDATARIO / COMPRADOR (CLIENTE QUE ALQUILA)        -->
+      <!-- ============================================================== -->
+      <div v-if="activeRole === 'renter'" class="flex flex-col min-h-full">
+        
+        <!-- Header del Comprador -->
+        <div class="bg-white border-b border-slate-100 p-4 sticky top-0 z-20 shadow-xs">
+          <div class="flex items-center justify-between mb-3">
+            <div>
+              <h1 class="text-xl font-extrabold text-slate-900 tracking-tight">¿Qué necesitas alquilar?</h1>
+              <p class="text-xs text-slate-500">Muebles, electrodomésticos y equipo en Honduras</p>
+            </div>
+            
+            <!-- Botón Mis Alquileres -->
+            <button 
+              @click="showMyRentalsModal = true" 
+              class="relative bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 text-xs font-bold px-3 py-1.5 rounded-xl flex items-center space-x-1.5 transition">
+              <span>📦</span>
+              <span>Mis Alquileres</span>
+              <span v-if="myRentalsCount > 0" class="w-5 h-5 bg-emerald-600 text-white rounded-full text-[10px] flex items-center justify-center font-bold">
+                {{ myRentalsCount }}
+              </span>
+            </button>
+          </div>
+
+          <!-- Barra de Búsqueda y Filtros de Ciudad -->
+          <div class="flex flex-col sm:flex-row gap-2">
+            <div class="relative flex-1">
+              <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">🔍</span>
+              <input 
+                v-model="searchQuery" 
+                type="text" 
+                placeholder="Buscar sofás, refrigeradoras, sillas tiffany..." 
+                class="w-full pl-9 pr-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 transition">
+            </div>
+
+            <!-- Selector de Ciudad en Honduras -->
+            <select 
+              v-model="selectedCity" 
+              class="text-xs bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-medium text-slate-700 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
+              <option value="Todas">📍 Todas las Ciudades</option>
+              <option value="San Pedro Sula">San Pedro Sula (SPS)</option>
+              <option value="Tegucigalpa">Tegucigalpa (TGU)</option>
+            </select>
+          </div>
+
+          <!-- Pills de Categorías -->
+          <div class="flex items-center space-x-2 overflow-x-auto pt-3 pb-1 no-scrollbar text-xs">
+            <button 
+              v-for="cat in categories" 
+              :key="cat.name"
+              @click="selectedCategory = cat.name"
+              :class="selectedCategory === cat.name ? 'bg-slate-900 text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'"
+              class="px-3 py-1.5 rounded-full font-semibold whitespace-nowrap transition flex items-center space-x-1">
+              <span>{{ cat.icon }}</span>
+              <span>{{ cat.name }}</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Banner Promocional Estilo Airbnb / Uber -->
+        <div class="p-4">
+          <div class="bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 rounded-2xl p-4 text-white shadow-md relative overflow-hidden">
+            <div class="relative z-10 max-w-sm">
+              <span class="bg-white/20 text-white text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full backdrop-blur-xs">Logística Gestionada</span>
+              <h2 class="text-base font-extrabold mt-1">Nosotros recogemos y te lo llevamos a la puerta</h2>
+              <p class="text-xs text-emerald-100 mt-1">Con garantía reembolsable y transporte coordinado por MobiRent.</p>
+            </div>
+            <div class="absolute -right-4 -bottom-6 text-7xl opacity-20 pointer-events-none">🚚</div>
+          </div>
+        </div>
+
+        <!-- Catálogo de Artículos Disponibles -->
+        <div class="px-4 pb-12">
+          <div class="flex items-center justify-between mb-3">
+            <h2 class="text-sm font-bold text-slate-800">
+              Artículos disponibles ({{ filteredItems.length }})
+            </h2>
+            <span class="text-xs text-slate-400">Precios en Lempiras (HNL)</span>
+          </div>
+
+          <!-- Grid de Productos -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div 
+              v-for="item in filteredItems" 
+              :key="item.id"
+              class="bg-white rounded-2xl border border-slate-200/90 shadow-xs hover:shadow-md transition overflow-hidden flex flex-col group">
+              
+              <!-- Imagen y Badges -->
+              <div class="relative h-44 bg-slate-100 overflow-hidden cursor-pointer" @click="openItemDetail(item)">
+                <img 
+                  :src="item.image" 
+                  :alt="item.title"
+                  class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+                <div class="absolute top-2.5 left-2.5 flex flex-col gap-1">
+                  <span class="bg-white/90 backdrop-blur-md text-slate-800 text-[10px] font-bold px-2 py-0.5 rounded-md shadow-xs">
+                    {{ item.category }}
+                  </span>
+                  <span class="bg-emerald-600/90 text-white text-[10px] font-bold px-2 py-0.5 rounded-md shadow-xs">
+                    {{ item.condition }}
+                  </span>
+                </div>
+                <div class="absolute top-2.5 right-2.5 bg-black/60 text-white text-[10px] font-semibold px-2 py-0.5 rounded-full flex items-center space-x-1">
+                  <span>📍</span>
+                  <span>{{ item.city }}</span>
+                </div>
+              </div>
+
+              <!-- Info Card -->
+              <div class="p-3.5 flex-1 flex flex-col justify-between">
+                <div>
+                  <div class="flex items-center justify-between mb-1">
+                    <span class="text-[11px] text-slate-400">Dueño: {{ item.ownerName }}</span>
+                    <span class="text-xs font-bold text-amber-500 flex items-center">
+                      ★ {{ item.rating }} <span class="text-[10px] text-slate-400 font-normal ml-0.5">({{ item.reviewsCount }})</span>
+                    </span>
+                  </div>
+                  <h3 
+                    @click="openItemDetail(item)"
+                    class="font-bold text-slate-900 text-sm hover:text-emerald-600 transition cursor-pointer line-clamp-1">
+                    {{ item.title }}
+                  </h3>
+                  <p class="text-xs text-slate-500 mt-1 line-clamp-2">{{ item.description }}</p>
+                </div>
+
+                <!-- Precios y Botón Alquilar -->
+                <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
+                  <div>
+                    <span class="text-[10px] text-slate-400 uppercase font-semibold block">Desde</span>
+                    <div class="flex items-baseline space-x-1">
+                      <span class="text-base font-extrabold text-slate-900">L. {{ item.priceDay }}</span>
+                      <span class="text-[10px] text-slate-500">/día</span>
+                    </div>
+                  </div>
+
+                  <button 
+                    @click="openItemDetail(item)"
+                    class="bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white px-3.5 py-1.5 rounded-xl text-xs font-bold shadow-xs transition flex items-center space-x-1">
+                    <span>Alquilar</span>
+                    <span>→</span>
+                  </button>
+                </div>
+
+              </div>
+
+            </div>
+          </div>
+
+          <div v-if="filteredItems.length === 0" class="text-center py-12">
+            <span class="text-4xl block mb-2">🔍</span>
+            <p class="text-sm font-semibold text-slate-700">No encontramos artículos para esa búsqueda</p>
+            <p class="text-xs text-slate-400 mt-1">Prueba cambiando la ciudad o la categoría seleccionada.</p>
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <!-- ============================================================== -->
+      <!-- VISTA 2: ARRENDADOR / VENDEDOR (EL QUE PUBLICA Y GANA DINERO)  -->
+      <!-- ============================================================== -->
+      <div v-if="activeRole === 'owner'" class="flex flex-col min-h-full bg-slate-50">
+        
+        <!-- Header del Arrendador -->
+        <div class="bg-white border-b border-slate-200 p-4">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <div class="flex items-center space-x-2">
+                <h1 class="text-xl font-extrabold text-slate-900">Panel del Propietario</h1>
+                <span class="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-md">Perfil Verificado</span>
+              </div>
+              <p class="text-xs text-slate-500">Monetiza tus muebles y electrodomésticos sin mover un dedo</p>
+            </div>
+
+            <!-- Botón Publicar Nuevo -->
+            <button 
+              @click="showPublishModal = true"
+              class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-4 py-2 rounded-xl shadow-sm transition flex items-center justify-center space-x-1.5 self-start sm:self-auto">
+              <span>➕</span>
+              <span>Publicar Nuevo Artículo</span>
+            </button>
+          </div>
+
+          <!-- Métricas Rápidas del Dueño -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4">
+            <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
+              <span class="text-[10px] uppercase font-bold text-slate-400 block">Ganancias Acumuladas</span>
+              <span class="text-lg font-extrabold text-emerald-600">L. {{ ownerStats.totalEarnings }}</span>
+              <span class="text-[10px] text-emerald-700 block mt-0.5">Listo para liquidar</span>
+            </div>
+            <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
+              <span class="text-[10px] uppercase font-bold text-slate-400 block">Artículos Activos</span>
+              <span class="text-lg font-extrabold text-slate-900">{{ ownerArticles.length }}</span>
+              <span class="text-[10px] text-slate-500 block mt-0.5">En catálogo</span>
+            </div>
+            <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
+              <span class="text-[10px] uppercase font-bold text-slate-400 block">Alquileres en Curso</span>
+              <span class="text-lg font-extrabold text-blue-600">{{ ownerStats.activeRentals }}</span>
+              <span class="text-[10px] text-blue-500 block mt-0.5">Generando renta</span>
+            </div>
+            <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
+              <span class="text-[10px] uppercase font-bold text-slate-400 block">Calificación Dueño</span>
+              <span class="text-lg font-extrabold text-amber-500 flex items-center">
+                ★ 4.9 <span class="text-xs text-slate-400 font-normal ml-1">(18)</span>
+              </span>
+              <span class="text-[10px] text-slate-500 block mt-0.5">Excelente estado</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pestañas del Dueño -->
+        <div class="p-4 flex-1">
+          <div class="flex space-x-2 border-b border-slate-200 pb-2 mb-4">
+            <button 
+              @click="ownerTab = 'items'" 
+              :class="ownerTab === 'items' ? 'text-emerald-700 border-b-2 border-emerald-600 font-bold' : 'text-slate-500 hover:text-slate-800 font-medium'"
+              class="text-xs pb-1.5 px-2 transition">
+              📦 Mis Muebles y Artículos ({{ ownerArticles.length }})
+            </button>
+            <button 
+              @click="ownerTab = 'requests'" 
+              :class="ownerTab === 'requests' ? 'text-emerald-700 border-b-2 border-emerald-600 font-bold' : 'text-slate-500 hover:text-slate-800 font-medium'"
+              class="text-xs pb-1.5 px-2 transition flex items-center space-x-1">
+              <span>🔔 Solicitudes y Reservas</span>
+              <span v-if="pendingRequestsCount > 0" class="w-4 h-4 bg-amber-500 text-white rounded-full text-[9px] flex items-center justify-center font-bold">
+                {{ pendingRequestsCount }}
+              </span>
+            </button>
+            <button 
+              @click="ownerTab = 'payouts'" 
+              :class="ownerTab === 'payouts' ? 'text-emerald-700 border-b-2 border-emerald-600 font-bold' : 'text-slate-500 hover:text-slate-800 font-medium'"
+              class="text-xs pb-1.5 px-2 transition">
+              💰 Liquidaciones Bancarias
+            </button>
+          </div>
+
+          <!-- TAB 1: Artículos Publicados -->
+          <div v-if="ownerTab === 'items'" class="space-y-3">
+            <div 
+              v-for="item in ownerArticles" 
+              :key="item.id"
+              class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              
+              <div class="flex items-center space-x-3">
+                <img :src="item.image" class="w-16 h-16 rounded-xl object-cover border border-slate-100">
+                <div>
+                  <div class="flex items-center space-x-2">
+                    <h3 class="font-bold text-slate-800 text-xs sm:text-sm">{{ item.title }}</h3>
+                    <span 
+                      :class="item.status === 'activo' ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-600'"
+                      class="text-[10px] font-bold px-2 py-0.5 rounded-full capitalize">
+                      {{ item.status }}
+                    </span>
+                  </div>
+                  <p class="text-xs text-slate-500">{{ item.category }} • {{ item.city }}</p>
+                  
+                  <!-- Precios fijados por el propietario -->
+                  <div class="flex items-center space-x-2 mt-1 text-[11px] font-semibold text-slate-700">
+                    <span>Día: <strong class="text-emerald-700">L. {{ item.priceDay }}</strong></span>
+                    <span>•</span>
+                    <span>Sem: <strong class="text-emerald-700">L. {{ item.priceWeek }}</strong></span>
+                    <span>•</span>
+                    <span>Mes: <strong class="text-emerald-700">L. {{ item.priceMonth }}</strong></span>
+                    <span class="text-slate-400">• Garantía: L. {{ item.deposit }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Acciones del artículo -->
+              <div class="flex items-center space-x-2 w-full sm:w-auto justify-end">
+                <button 
+                  @click="toggleItemStatus(item)" 
+                  class="text-xs px-3 py-1.5 rounded-lg border border-slate-200 font-medium hover:bg-slate-50 transition">
+                  {{ item.status === 'activo' ? 'Pausar' : 'Activar' }}
+                </button>
+                <button 
+                  @click="deleteItem(item.id)" 
+                  class="text-xs px-2.5 py-1.5 rounded-lg text-red-600 hover:bg-red-50 border border-red-200 transition">
+                  🗑️
+                </button>
+              </div>
+
+            </div>
+
+            <div v-if="ownerArticles.length === 0" class="text-center py-8 bg-white rounded-xl border border-dashed border-slate-200">
+              <span class="text-3xl block mb-2">📦</span>
+              <p class="text-xs font-bold text-slate-700">No tienes artículos publicados aún</p>
+              <button 
+                @click="showPublishModal = true"
+                class="mt-2 text-xs bg-emerald-600 text-white px-3 py-1.5 rounded-lg font-bold">
+                Publicar tu primer mueble
+              </button>
+            </div>
+          </div>
+
+          <!-- TAB 2: Solicitudes de Alquiler -->
+          <div v-if="ownerTab === 'requests'" class="space-y-3">
+            <div 
+              v-for="rental in ownerRentals" 
+              :key="rental.id"
+              class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs">
+              
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-2 mb-2">
+                <div>
+                  <span class="text-[10px] text-slate-400 uppercase font-bold">Reserva #{{ rental.id }}</span>
+                  <h4 class="font-bold text-sm text-slate-800">{{ rental.itemTitle }}</h4>
+                </div>
+                <span 
+                  :class="getRentalBadgeClass(rental.status)"
+                  class="text-[10px] font-bold px-2.5 py-1 rounded-full uppercase self-start">
+                  {{ rental.status }}
+                </span>
+              </div>
+
+              <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs text-slate-600 my-2">
+                <div><span class="text-slate-400 block">Arrendatario:</span> <strong>{{ rental.renterName }}</strong></div>
+                <div><span class="text-slate-400 block">Duración:</span> <strong>{{ rental.duration }} ({{ rental.durationType }})</strong></div>
+                <div><span class="text-slate-400 block">Tu ganancia neta:</span> <strong class="text-emerald-600 font-extrabold">L. {{ rental.ownerPayout }}</strong></div>
+              </div>
+
+              <div class="bg-slate-50 p-2 rounded-lg text-xs flex items-center justify-between text-slate-600">
+                <span>🚚 MobiRent recogerá en tu dirección: <strong>{{ rental.pickupAddress || 'Col. Trejo, San Pedro Sula' }}</strong></span>
+              </div>
+
+              <!-- Botones de Aprobación si está Pendiente -->
+              <div v-if="rental.status === 'PENDIENTE_APROBACION'" class="mt-3 flex space-x-2 justify-end">
+                <button 
+                  @click="approveRentalByOwner(rental.id)"
+                  class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition">
+                  ✓ Aceptar Solicitud
+                </button>
+                <button 
+                  @click="rejectRentalByOwner(rental.id)"
+                  class="border border-red-300 text-red-600 hover:bg-red-50 text-xs font-bold px-3 py-1.5 rounded-lg transition">
+                  ✕ Rechazar
+                </button>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- TAB 3: Liquidaciones y Pagos -->
+          <div v-if="ownerTab === 'payouts'" class="bg-white p-4 rounded-xl border border-slate-200">
+            <h3 class="font-bold text-sm text-slate-900 mb-2">Liquidaciones de MobiRent a tu cuenta</h3>
+            <p class="text-xs text-slate-500 mb-4">MobiRent transfiere tu dinero directamente a tu cuenta bancaria (BAC, Atlántida, Ficohsa, Banpaís) tras verificar la entrega.</p>
+            
+            <div class="bg-emerald-50 border border-emerald-200 p-4 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              <div>
+                <span class="text-xs text-emerald-800 font-bold block">Saldo acumulado disponible para retiro:</span>
+                <span class="text-2xl font-black text-emerald-700">L. {{ ownerStats.totalEarnings }}</span>
+                <span class="text-[11px] text-emerald-600 block mt-0.5">Cuenta: BAC Credomatic HNL •••• 4912</span>
+              </div>
+              <button 
+                @click="requestPayout"
+                class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-4 py-2 rounded-xl shadow-xs transition">
+                Solicitar Transferencia Bancaria
+              </button>
+            </div>
+
+            <h4 class="font-bold text-xs text-slate-700 mt-6 mb-2 uppercase tracking-wide">Historial de pagos recibidos</h4>
+            <div class="space-y-2 text-xs">
+              <div class="p-2.5 rounded-lg border border-slate-100 flex justify-between items-center bg-slate-50/50">
+                <div>
+                  <span class="font-bold text-slate-800">Alquiler Sofá Seccional Gris (1 Mes)</span>
+                  <span class="text-[10px] text-slate-400 block">Transferencia #BAC-98214 • Pagado</span>
+                </div>
+                <span class="font-extrabold text-emerald-600">+ L. 1,800.00</span>
+              </div>
+              <div class="p-2.5 rounded-lg border border-slate-100 flex justify-between items-center bg-slate-50/50">
+                <div>
+                  <span class="font-bold text-slate-800">Alquiler Sillas Tiffany (Evento Fin de Semana)</span>
+                  <span class="text-[10px] text-slate-400 block">Transferencia #BAC-96301 • Pagado</span>
+                </div>
+                <span class="font-extrabold text-emerald-600">+ L. 1,650.00</span>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <!-- ============================================================== -->
+      <!-- VISTA 3: ADMINISTRADOR DE MOBIRENT (CONTROL TOTAL Y LOGÍSTICA) -->
+      <!-- ============================================================== -->
+      <div v-if="activeRole === 'admin'" class="flex flex-col min-h-full bg-slate-900 text-slate-100">
+        
+        <!-- Header del Admin -->
+        <div class="bg-slate-950 p-4 border-b border-slate-800">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <div class="flex items-center space-x-2">
+                <span class="w-3 h-3 bg-emerald-500 rounded-full animate-pulse"></span>
+                <h1 class="text-xl font-black text-white tracking-tight">Panel Central MobiRent</h1>
+                <span class="bg-slate-800 text-emerald-400 text-[10px] font-mono px-2 py-0.5 rounded border border-slate-700">MOBI-OPS v1.0</span>
+              </div>
+              <p class="text-xs text-slate-400">Control de operaciones, pagos de clientes, liquidaciones y logística en Honduras</p>
+            </div>
+
+            <!-- Filtro de Ciudad para Operaciones -->
+            <div class="flex items-center space-x-2">
+              <span class="text-xs text-slate-400">Región:</span>
+              <select class="bg-slate-800 text-xs text-white border border-slate-700 rounded-lg px-2.5 py-1.5 focus:outline-none">
+                <option>Nacional (SPS y TGU)</option>
+                <option>San Pedro Sula</option>
+                <option>Tegucigalpa</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Métricas del Negocio (KPIs de MobiRent) -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4">
+            <div class="bg-slate-900/90 border border-slate-800 p-3 rounded-xl">
+              <span class="text-[10px] uppercase font-bold text-slate-400">Margen MobiRent (Ingresos)</span>
+              <div class="text-lg font-black text-emerald-400">L. {{ adminMetrics.totalRevenue }}</div>
+              <span class="text-[10px] text-slate-500">Comisiones + Servicios cobrados</span>
+            </div>
+            <div class="bg-slate-900/90 border border-slate-800 p-3 rounded-xl">
+              <span class="text-[10px] uppercase font-bold text-slate-400">Garantías en Custodia</span>
+              <div class="text-lg font-black text-amber-400">L. {{ adminMetrics.escrowDeposits }}</div>
+              <span class="text-[10px] text-amber-500/80">Reembolsables a clientes</span>
+            </div>
+            <div class="bg-slate-900/90 border border-slate-800 p-3 rounded-xl">
+              <span class="text-[10px] uppercase font-bold text-slate-400">Alquileres Activos</span>
+              <div class="text-lg font-black text-blue-400">{{ rentals.length }}</div>
+              <span class="text-[10px] text-slate-500">Transacciones gestionadas</span>
+            </div>
+            <div class="bg-slate-900/90 border border-slate-800 p-3 rounded-xl">
+              <span class="text-[10px] uppercase font-bold text-slate-400">Viajes Logísticos</span>
+              <div class="text-lg font-black text-purple-400">{{ pendingDeliveriesCount }}</div>
+              <span class="text-[10px] text-purple-300">En ruta o por retirar</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Controles del Admin -->
+        <div class="p-4 flex-1">
+          <div class="flex space-x-2 border-b border-slate-800 pb-2 mb-4">
+            <button 
+              @click="adminTab = 'logistics'" 
+              :class="adminTab === 'logistics' ? 'text-emerald-400 border-b-2 border-emerald-400 font-bold' : 'text-slate-400 hover:text-white font-medium'"
+              class="text-xs pb-1.5 px-2 transition flex items-center space-x-1">
+              <span>🚚 Monitoreo Logístico y Envíos</span>
+              <span class="w-4 h-4 bg-purple-500 text-white rounded-full text-[9px] flex items-center justify-center font-bold">
+                {{ pendingDeliveriesCount }}
+              </span>
+            </button>
+            <button 
+              @click="adminTab = 'orders'" 
+              :class="adminTab === 'orders' ? 'text-emerald-400 border-b-2 border-emerald-400 font-bold' : 'text-slate-400 hover:text-white font-medium'"
+              class="text-xs pb-1.5 px-2 transition">
+              📑 Todas las Reservas y Finanzas
+            </button>
+            <button 
+              @click="adminTab = 'catalog'" 
+              :class="adminTab === 'catalog' ? 'text-emerald-400 border-b-2 border-emerald-400 font-bold' : 'text-slate-400 hover:text-white font-medium'"
+              class="text-xs pb-1.5 px-2 transition">
+              🪑 Catálogo y Moderación
+            </button>
+          </div>
+
+          <!-- TAB ADMIN 1: Monitoreo Logístico Interactivo -->
+          <div v-if="adminTab === 'logistics'" class="space-y-4">
+            <div class="bg-slate-800/80 p-3 rounded-xl border border-slate-700 flex items-center justify-between">
+              <div>
+                <h3 class="text-xs font-bold text-white">Flujo de Estados Logísticos Gestionados por MobiRent</h3>
+                <p class="text-[11px] text-slate-400">Haz clic en los botones para avanzar el estado de transporte de cada alquiler en tiempo real.</p>
+              </div>
+              <span class="text-[10px] bg-slate-900 px-2.5 py-1 rounded-full text-slate-300 font-mono">
+                Logística: MANAGED
+              </span>
+            </div>
+
+            <!-- Lista de Viajes Logísticos -->
+            <div class="space-y-3">
+              <div 
+                v-for="rental in rentals" 
+                :key="rental.id"
+                class="bg-slate-950 p-4 rounded-xl border border-slate-800 hover:border-slate-700 transition">
+                
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-2 mb-3">
+                  <div class="flex items-center space-x-2">
+                    <span class="font-mono text-xs text-emerald-400 font-bold">#ORD-{{ rental.id }}</span>
+                    <span class="text-xs font-bold text-white">{{ rental.itemTitle }}</span>
+                  </div>
+                  
+                  <!-- Badge de Estado Actual -->
+                  <div class="flex items-center space-x-2">
+                    <span class="text-[10px] text-slate-400">Estado actual:</span>
+                    <span 
+                      :class="getAdminBadgeClass(rental.status)"
+                      class="text-[10px] font-mono font-bold px-2.5 py-1 rounded-md uppercase">
+                      {{ rental.status }}
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Detalle de Recogida y Entrega -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-slate-300 mb-3 bg-slate-900/70 p-3 rounded-lg border border-slate-800/80">
+                  <div>
+                    <span class="text-[10px] uppercase font-bold text-slate-500 block">1. Origen (Dirección del Dueño)</span>
+                    <p class="font-semibold text-white">{{ rental.ownerName }}</p>
+                    <p class="text-[11px] text-slate-400">📍 {{ rental.pickupAddress || 'Col. Trejo, San Pedro Sula' }}</p>
+                  </div>
+                  <div>
+                    <span class="text-[10px] uppercase font-bold text-slate-500 block">2. Destino (Dirección del Cliente)</span>
+                    <p class="font-semibold text-white">{{ rental.renterName }} (Tel: {{ rental.renterPhone || '+504 9988-1122' }})</p>
+                    <p class="text-[11px] text-slate-400">📍 {{ rental.deliveryAddress }}</p>
+                  </div>
+                </div>
+
+                <!-- Controles para Cambiar Estado Logístico en Vivo -->
+                <div class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-800/60">
+                  <span class="text-[11px] text-slate-400 font-medium">Avanzar estado operativo:</span>
+
+                  <div class="flex flex-wrap gap-1.5">
+                    <button 
+                      @click="setRentalStatus(rental.id, 'ASIGNADA')"
+                      :disabled="rental.status === 'ASIGNADA'"
+                      class="text-[11px] px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition disabled:opacity-30">
+                      1. Asignar Chofer
+                    </button>
+                    <button 
+                      @click="setRentalStatus(rental.id, 'EN RECOGIDA')"
+                      :disabled="rental.status === 'EN RECOGIDA'"
+                      class="text-[11px] px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition disabled:opacity-30">
+                      2. En Recogida
+                    </button>
+                    <button 
+                      @click="setRentalStatus(rental.id, 'EN TRÁNSITO')"
+                      :disabled="rental.status === 'EN TRÁNSITO'"
+                      class="text-[11px] px-2.5 py-1 rounded bg-blue-900/50 hover:bg-blue-800 text-blue-200 border border-blue-700 transition disabled:opacity-30">
+                      3. En Tránsito
+                    </button>
+                    <button 
+                      @click="setRentalStatus(rental.id, 'ENTREGADA')"
+                      :disabled="rental.status === 'ENTREGADA'"
+                      class="text-[11px] px-2.5 py-1 rounded bg-emerald-900/50 hover:bg-emerald-800 text-emerald-200 border border-emerald-700 transition disabled:opacity-30">
+                      4. Entregada ✓
+                    </button>
+                    <button 
+                      @click="setRentalStatus(rental.id, 'DEVUELTA')"
+                      :disabled="rental.status === 'DEVUELTA'"
+                      class="text-[11px] px-2.5 py-1 rounded bg-purple-900/50 hover:bg-purple-800 text-purple-200 border border-purple-700 transition disabled:opacity-30">
+                      5. Devolución & Garantía
+                    </button>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+          </div>
+
+          <!-- TAB ADMIN 2: Finanzas y Reservas Totales -->
+          <div v-if="adminTab === 'orders'" class="space-y-3">
+            <div class="bg-slate-950 p-4 rounded-xl border border-slate-800">
+              <h3 class="text-xs font-bold text-white mb-2 uppercase tracking-wide">Desglose Transaccional Completo</h3>
+              <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs text-slate-300">
+                  <thead class="bg-slate-900 text-slate-400 uppercase text-[10px] font-bold">
+                    <tr>
+                      <th class="p-2.5">ID / Artículo</th>
+                      <th class="p-2.5">Cliente</th>
+                      <th class="p-2.5">Pago Cliente</th>
+                      <th class="p-2.5">Pago Dueño</th>
+                      <th class="p-2.5">Logística</th>
+                      <th class="p-2.5">Margen MobiRent</th>
+                      <th class="p-2.5">Garantía</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800">
+                    <tr v-for="r in rentals" :key="r.id">
+                      <td class="p-2.5">
+                        <span class="font-mono text-emerald-400 block font-bold">#{{ r.id }}</span>
+                        <span class="text-white">{{ r.itemTitle }}</span>
+                      </td>
+                      <td class="p-2.5">{{ r.renterName }}</td>
+                      <td class="p-2.5 font-bold text-white">L. {{ r.totalPaid }}</td>
+                      <td class="p-2.5 text-slate-300">L. {{ r.ownerPayout }}</td>
+                      <td class="p-2.5 text-slate-400">L. {{ r.transportFee }}</td>
+                      <td class="p-2.5 font-extrabold text-emerald-400">L. {{ r.serviceFee }}</td>
+                      <td class="p-2.5 text-amber-400 font-semibold">L. {{ r.deposit }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- TAB ADMIN 3: Moderación de Catálogo -->
+          <div v-if="adminTab === 'catalog'" class="space-y-3">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div 
+                v-for="item in items" 
+                :key="item.id"
+                class="bg-slate-950 p-3 rounded-xl border border-slate-800 flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                  <img :src="item.image" class="w-12 h-12 rounded-lg object-cover">
+                  <div>
+                    <h4 class="text-xs font-bold text-white">{{ item.title }}</h4>
+                    <p class="text-[11px] text-slate-400">{{ item.category }} • {{ item.city }} • Dueño: {{ item.ownerName }}</p>
+                    <span class="text-xs font-extrabold text-emerald-400">L. {{ item.priceDay }} /día</span>
+                  </div>
+                </div>
+                <button 
+                  @click="deleteItem(item.id)"
+                  class="text-xs text-red-400 hover:text-red-300 p-2 hover:bg-slate-900 rounded-lg">
+                  Eliminar
+                </button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+
+  <!-- ============================================================== -->
+  <!-- MODAL: DETALLE DEL ARTÍCULO Y COTIZADOR EN VIVO (ARRENDATARIO) -->
+  <!-- ============================================================== -->
+  <div 
+    v-if="selectedItem" 
+    class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs overflow-y-auto">
+    
+    <div class="bg-white rounded-3xl max-w-lg w-full overflow-hidden shadow-2xl border border-slate-100 flex flex-col my-6">
+      
+      <!-- Imagen y Botón Cerrar -->
+      <div class="relative h-56 sm:h-64 bg-slate-100">
+        <img :src="selectedItem.image" :alt="selectedItem.title" class="w-full h-full object-cover">
+        <button 
+          @click="selectedItem = null" 
+          class="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/60 hover:bg-black/80 text-white flex items-center justify-center font-bold text-sm transition">
+          ✕
+        </button>
+        <div class="absolute bottom-3 left-3 bg-white/95 backdrop-blur-xs text-slate-800 text-xs font-bold px-3 py-1 rounded-xl shadow-xs">
+          📍 {{ selectedItem.city }}, Honduras
+        </div>
+      </div>
+
+      <!-- Contenido del Artículo -->
+      <div class="p-5 flex-1 flex flex-col">
+        <div class="flex items-center justify-between mb-1">
+          <span class="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-md">
+            {{ selectedItem.category }} • Estado: {{ selectedItem.condition }}
+          </span>
+          <span class="text-xs font-bold text-amber-500">
+            ★ {{ selectedItem.rating }} ({{ selectedItem.reviewsCount }} opiniones)
+          </span>
+        </div>
+
+        <h2 class="text-lg font-extrabold text-slate-900">{{ selectedItem.title }}</h2>
+        <p class="text-xs text-slate-500 mt-1">{{ selectedItem.description }}</p>
+
+        <!-- Dueño del artículo -->
+        <div class="flex items-center space-x-2.5 my-3 p-2.5 bg-slate-50 rounded-xl border border-slate-100">
+          <div class="w-8 h-8 rounded-full bg-emerald-600 text-white font-bold text-xs flex items-center justify-center">
+            {{ selectedItem.ownerName.charAt(0) }}
+          </div>
+          <div class="text-xs">
+            <span class="font-bold text-slate-800 block">Dueño: {{ selectedItem.ownerName }}</span>
+            <span class="text-slate-400">Verificado por MobiRent • Identidad confirmada</span>
+          </div>
+        </div>
+
+        <!-- CALCULADORA DE ALQUILER EN TIEMPO REAL -->
+        <div class="border-t border-slate-100 pt-3 mt-1">
+          <label class="text-xs font-bold text-slate-700 block mb-1.5">1. Selecciona la modalidad de alquiler:</label>
+          
+          <div class="grid grid-cols-3 gap-2 mb-3">
+            <button 
+              @click="bookingDurationType = 'dia'"
+              :class="bookingDurationType === 'dia' ? 'bg-emerald-600 text-white shadow-xs' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'"
+              class="py-2 px-1 text-center rounded-xl text-xs font-bold transition">
+              Por Día
+              <span class="block text-[10px] font-normal opacity-90">L. {{ selectedItem.priceDay }}</span>
+            </button>
+
+            <button 
+              @click="bookingDurationType = 'semana'"
+              :class="bookingDurationType === 'semana' ? 'bg-emerald-600 text-white shadow-xs' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'"
+              class="py-2 px-1 text-center rounded-xl text-xs font-bold transition">
+              Por Semana
+              <span class="block text-[10px] font-normal opacity-90">L. {{ selectedItem.priceWeek }}</span>
+            </button>
+
+            <button 
+              @click="bookingDurationType = 'mes'"
+              :class="bookingDurationType === 'mes' ? 'bg-emerald-600 text-white shadow-xs' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'"
+              class="py-2 px-1 text-center rounded-xl text-xs font-bold transition">
+              Por Mes
+              <span class="block text-[10px] font-normal opacity-90">L. {{ selectedItem.priceMonth }}</span>
+            </button>
+          </div>
+
+          <!-- Selector de Cantidad (días / semanas / meses) -->
+          <div class="flex items-center justify-between mb-3 bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+            <span class="text-xs font-semibold text-slate-700">Cantidad de {{ bookingDurationTypeLabel }}:</span>
+            <div class="flex items-center space-x-2">
+              <button 
+                @click="decreaseQuantity" 
+                class="w-7 h-7 bg-white rounded-lg border border-slate-300 font-bold text-slate-700 flex items-center justify-center hover:bg-slate-100">
+                -
+              </button>
+              <span class="font-extrabold text-sm text-slate-800 w-6 text-center">{{ bookingQuantity }}</span>
+              <button 
+                @click="increaseQuantity" 
+                class="w-7 h-7 bg-white rounded-lg border border-slate-300 font-bold text-slate-700 flex items-center justify-center hover:bg-slate-100">
+                +
+              </button>
+            </div>
+          </div>
+
+          <!-- DESGLOSE TRANSPARENTE DEL COSTO (Requisito fundamental de MobiRent) -->
+          <div class="bg-slate-50 p-3.5 rounded-2xl border border-slate-200 space-y-1.5 text-xs text-slate-600">
+            <div class="flex justify-between">
+              <span>Alquiler ({{ bookingQuantity }} {{ bookingDurationTypeLabel }}):</span>
+              <span class="font-bold text-slate-800">L. {{ calculateRentalSubtotal }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span>Transporte y Entrega MobiRent:</span>
+              <span class="font-bold text-slate-800">L. {{ defaultTransportFee }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span>Tarifa de Servicio MobiRent:</span>
+              <span class="font-bold text-slate-800">L. {{ defaultServiceFee }}</span>
+            </div>
+            <div class="flex justify-between text-amber-700 bg-amber-50/80 -mx-1 px-1 py-0.5 rounded">
+              <span class="flex items-center">
+                <span>🛡️ Garantía (100% Reembolsable):</span>
+              </span>
+              <span class="font-extrabold">L. {{ selectedItem.deposit }}</span>
+            </div>
+
+            <div class="border-t border-slate-200 pt-2 mt-2 flex justify-between items-baseline text-slate-900">
+              <span class="text-xs font-extrabold uppercase">Total a Pagar:</span>
+              <span class="text-lg font-black text-emerald-600">L. {{ calculateRentalTotal }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Botón de Continuar a Checkout -->
+        <button 
+          @click="startCheckout"
+          class="mt-4 w-full bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-extrabold py-3 rounded-2xl shadow-md transition flex items-center justify-center space-x-2">
+          <span>Continuar con la Reserva</span>
+          <span>→</span>
+        </button>
+
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- ============================================================== -->
+  <!-- MODAL: CHECKOUT / PAGO Y DIRECCIÓN DE ENTREGA (ARRENDATARIO)   -->
+  <!-- ============================================================== -->
+  <div 
+    v-if="showCheckoutModal" 
+    class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs overflow-y-auto">
+    
+    <div class="bg-white rounded-3xl max-w-md w-full overflow-hidden shadow-2xl border border-slate-100 flex flex-col my-6">
+      
+      <div class="p-4 bg-slate-900 text-white flex items-center justify-between">
+        <div>
+          <h3 class="font-bold text-sm">Completar Alquiler en MobiRent</h3>
+          <p class="text-[11px] text-slate-400">Entrega coordinada y garantía protegida</p>
+        </div>
+        <button @click="showCheckoutModal = false" class="text-slate-400 hover:text-white font-bold">✕</button>
+      </div>
+
+      <div class="p-5 space-y-4">
+        
+        <!-- Resumen del artículo -->
+        <div class="flex items-center space-x-3 p-2.5 bg-slate-50 rounded-xl border border-slate-100">
+          <img :src="selectedItem.image" class="w-12 h-12 rounded-lg object-cover">
+          <div>
+            <h4 class="text-xs font-bold text-slate-900">{{ selectedItem.title }}</h4>
+            <p class="text-[11px] text-slate-500">{{ bookingQuantity }} {{ bookingDurationTypeLabel }} • Total: <strong class="text-emerald-700">L. {{ calculateRentalTotal }}</strong></p>
+          </div>
+        </div>
+
+        <!-- Datos de Entrega -->
+        <div>
+          <label class="text-xs font-bold text-slate-700 block mb-1">Dirección de Entrega en {{ selectedItem.city }}:</label>
+          <input 
+            v-model="checkoutForm.address"
+            type="text" 
+            placeholder="Ej: Col. Los Castaños, 4ta calle, casa #24" 
+            class="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
+        </div>
+
+        <div>
+          <label class="text-xs font-bold text-slate-700 block mb-1">Teléfono de Contacto (WhatsApp):</label>
+          <input 
+            v-model="checkoutForm.phone"
+            type="text" 
+            placeholder="+504 9988-7766" 
+            class="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
+        </div>
+
+        <!-- Método de Pago Simulado -->
+        <div>
+          <label class="text-xs font-bold text-slate-700 block mb-1.5">Método de Pago:</label>
+          <div class="space-y-2">
+            <label class="flex items-center space-x-2.5 p-2.5 rounded-xl border border-slate-200 cursor-pointer hover:bg-slate-50 transition" :class="checkoutForm.paymentMethod === 'card' ? 'border-emerald-500 bg-emerald-50/40' : ''">
+              <input type="radio" v-model="checkoutForm.paymentMethod" value="card" class="text-emerald-600 focus:ring-emerald-500">
+              <div class="text-xs">
+                <span class="font-bold text-slate-800 block">Tarjeta de Crédito / Débito</span>
+                <span class="text-slate-400">Visa / Mastercard (Procesamiento Seguro)</span>
+              </div>
+            </label>
+
+            <label class="flex items-center space-x-2.5 p-2.5 rounded-xl border border-slate-200 cursor-pointer hover:bg-slate-50 transition" :class="checkoutForm.paymentMethod === 'transfer' ? 'border-emerald-500 bg-emerald-50/40' : ''">
+              <input type="radio" v-model="checkoutForm.paymentMethod" value="transfer" class="text-emerald-600 focus:ring-emerald-500">
+              <div class="text-xs">
+                <span class="font-bold text-slate-800 block">Transferencia Bancaria en Honduras</span>
+                <span class="text-slate-400">BAC Credomatic / Banco Atlántida / Ficohsa</span>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <!-- Botón de Confirmación -->
+        <button 
+          @click="confirmBooking"
+          class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold py-3 rounded-2xl shadow-lg transition flex items-center justify-center space-x-2">
+          <span>✓ Pagar y Confirmar Alquiler</span>
+        </button>
+
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- ============================================================== -->
+  <!-- MODAL: MIS ALQUILERES / TRACKING LOGÍSTICO (ARRENDATARIO)      -->
+  <!-- ============================================================== -->
+  <div 
+    v-if="showMyRentalsModal" 
+    class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs overflow-y-auto">
+    
+    <div class="bg-white rounded-3xl max-w-lg w-full overflow-hidden shadow-2xl border border-slate-100 flex flex-col my-6">
+      
+      <div class="p-4 bg-slate-900 text-white flex items-center justify-between">
+        <div class="flex items-center space-x-2">
+          <span>📦</span>
+          <h3 class="font-bold text-sm">Mis Alquileres Activos</h3>
+        </div>
+        <button @click="showMyRentalsModal = false" class="text-slate-400 hover:text-white font-bold">✕</button>
+      </div>
+
+      <div class="p-5 space-y-4 max-h-[75vh] overflow-y-auto">
+        
+        <div 
+          v-for="rental in rentals" 
+          :key="rental.id"
+          class="bg-slate-50 p-4 rounded-2xl border border-slate-200 shadow-xs space-y-3">
+          
+          <div class="flex items-center justify-between">
+            <div>
+              <span class="text-[10px] text-slate-400 uppercase font-mono font-bold">Pedido #{{ rental.id }}</span>
+              <h4 class="font-bold text-sm text-slate-900">{{ rental.itemTitle }}</h4>
+            </div>
+            <span 
+              :class="getRentalBadgeClass(rental.status)"
+              class="text-[10px] font-bold px-2.5 py-1 rounded-full uppercase">
+              {{ rental.status }}
+            </span>
+          </div>
+
+          <!-- LÍNEA DE TIEMPO / TRACKING LOGÍSTICO VISUAL -->
+          <div class="py-2">
+            <span class="text-[11px] font-bold text-slate-700 block mb-2">Progreso de la Entrega:</span>
+            <div class="flex items-center justify-between relative">
+              <div class="absolute left-2 right-2 top-3 h-0.5 bg-slate-200 -z-0"></div>
+              
+              <!-- Paso 1 -->
+              <div class="flex flex-col items-center z-10">
+                <div class="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold text-white bg-emerald-600 shadow">✓</div>
+                <span class="text-[9px] text-slate-600 mt-1 font-semibold">Confirmado</span>
+              </div>
+
+              <!-- Paso 2 -->
+              <div class="flex flex-col items-center z-10">
+                <div 
+                  :class="['EN RECOGIDA', 'EN TRÁNSITO', 'ENTREGADA', 'DEVUELTA'].includes(rental.status) ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-400'"
+                  class="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold shadow">
+                  🚚
+                </div>
+                <span class="text-[9px] text-slate-600 mt-1 font-semibold">En Recogida</span>
+              </div>
+
+              <!-- Paso 3 -->
+              <div class="flex flex-col items-center z-10">
+                <div 
+                  :class="['EN TRÁNSITO', 'ENTREGADA', 'DEVUELTA'].includes(rental.status) ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-400'"
+                  class="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold shadow">
+                  🛣️
+                </div>
+                <span class="text-[9px] text-slate-600 mt-1 font-semibold">En Tránsito</span>
+              </div>
+
+              <!-- Paso 4 -->
+              <div class="flex flex-col items-center z-10">
+                <div 
+                  :class="['ENTREGADA', 'DEVUELTA'].includes(rental.status) ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-400'"
+                  class="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold shadow">
+                  🏠
+                </div>
+                <span class="text-[9px] text-slate-600 mt-1 font-semibold">Entregado</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Datos de entrega -->
+          <div class="text-xs text-slate-600 bg-white p-2.5 rounded-xl border border-slate-200/80 space-y-1">
+            <div class="flex justify-between">
+              <span class="text-slate-400">Dirección:</span>
+              <span class="font-semibold text-slate-800">{{ rental.deliveryAddress }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-slate-400">Garantía Protegida:</span>
+              <span class="font-bold text-amber-600">L. {{ rental.deposit }} (Reembolsable)</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-slate-400">Total Pagado:</span>
+              <span class="font-extrabold text-emerald-700">L. {{ rental.totalPaid }}</span>
+            </div>
+          </div>
+
+        </div>
+
+        <div v-if="rentals.length === 0" class="text-center py-8">
+          <p class="text-xs text-slate-500">No tienes alquileres registrados todavía.</p>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- ============================================================== -->
+  <!-- MODAL: PUBLICAR NUEVO ARTÍCULO (ARRENDADOR / DUEÑO)            -->
+  <!-- ============================================================== -->
+  <div 
+    v-if="showPublishModal" 
+    class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs overflow-y-auto">
+    
+    <div class="bg-white rounded-3xl max-w-lg w-full overflow-hidden shadow-2xl border border-slate-100 flex flex-col my-6">
+      
+      <div class="p-4 bg-emerald-600 text-white flex items-center justify-between">
+        <div>
+          <h3 class="font-bold text-sm">Publicar Artículo en MobiRent</h3>
+          <p class="text-[11px] text-emerald-100">Gana dinero alquilando lo que no usas</p>
+        </div>
+        <button @click="showPublishModal = false" class="text-white hover:text-emerald-200 font-bold">✕</button>
+      </div>
+
+      <div class="p-5 space-y-4 max-h-[80vh] overflow-y-auto">
+        
+        <div>
+          <label class="text-xs font-bold text-slate-700 block mb-1">Nombre o Título del Artículo:</label>
+          <input 
+            v-model="newItem.title"
+            type="text" 
+            placeholder="Ej: Juego de Comedor 6 Sillas Caoba" 
+            class="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-xs font-bold text-slate-700 block mb-1">Categoría:</label>
+            <select 
+              v-model="newItem.category"
+              class="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
+              <option v-for="cat in publishCategories" :key="cat" :value="cat">{{ cat }}</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="text-xs font-bold text-slate-700 block mb-1">Ciudad:</label>
+            <select 
+              v-model="newItem.city"
+              class="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
+              <option value="San Pedro Sula">San Pedro Sula (SPS)</option>
+              <option value="Tegucigalpa">Tegucigalpa (TGU)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-xs font-bold text-slate-700 block mb-1">Estado Físico:</label>
+            <select 
+              v-model="newItem.condition"
+              class="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
+              <option value="Excelente">Excelente</option>
+              <option value="Como nuevo">Como nuevo</option>
+              <option value="Buen estado">Buen estado</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="text-xs font-bold text-slate-700 block mb-1">Depósito Garantía (L.):</label>
+            <input 
+              v-model.number="newItem.deposit"
+              type="number" 
+              placeholder="Ej: 800" 
+              class="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
+          </div>
+        </div>
+
+        <!-- DEFINIR PRECIOS (PREGUNTA CLAVE DE ANDRES: "QUE PONGA PRECIO DECILE") -->
+        <div class="bg-emerald-50/70 p-3.5 rounded-2xl border border-emerald-200/80">
+          <label class="text-xs font-extrabold text-emerald-900 block mb-2">
+            💰 Fija los Precios que recibirás (en Lempiras HNL):
+          </label>
+          <div class="grid grid-cols-3 gap-2">
+            <div>
+              <span class="text-[10px] font-bold text-slate-600 block mb-0.5">Por Día (L.):</span>
+              <input 
+                v-model.number="newItem.priceDay"
+                type="number" 
+                class="w-full text-xs p-2 bg-white border border-emerald-300 rounded-lg font-bold text-emerald-800">
+            </div>
+            <div>
+              <span class="text-[10px] font-bold text-slate-600 block mb-0.5">Por Semana (L.):</span>
+              <input 
+                v-model.number="newItem.priceWeek"
+                type="number" 
+                class="w-full text-xs p-2 bg-white border border-emerald-300 rounded-lg font-bold text-emerald-800">
+            </div>
+            <div>
+              <span class="text-[10px] font-bold text-slate-600 block mb-0.5">Por Mes (L.):</span>
+              <input 
+                v-model.number="newItem.priceMonth"
+                type="number" 
+                class="w-full text-xs p-2 bg-white border border-emerald-300 rounded-lg font-bold text-emerald-800">
+            </div>
+          </div>
+          <span class="text-[10px] text-emerald-700 block mt-2">
+            * MobiRent sumará el transporte y su comisión al cliente final.
+          </span>
+        </div>
+
+        <!-- Selección Rápida de Imagen Preset para Prototipo -->
+        <div>
+          <label class="text-xs font-bold text-slate-700 block mb-1">Fotografía del Mueble:</label>
+          <div class="grid grid-cols-4 gap-2 mb-2">
+            <button 
+              type="button"
+              v-for="preset in imagePresets" 
+              :key="preset.name"
+              @click="newItem.image = preset.url"
+              :class="newItem.image === preset.url ? 'ring-2 ring-emerald-500 scale-95' : 'opacity-70 hover:opacity-100'"
+              class="relative h-14 rounded-lg overflow-hidden border border-slate-200 transition">
+              <img :src="preset.url" class="w-full h-full object-cover">
+              <span class="absolute bottom-0 inset-x-0 bg-black/60 text-[9px] text-white text-center truncate px-0.5">
+                {{ preset.name }}
+              </span>
+            </button>
+          </div>
+          <input 
+            v-model="newItem.image"
+            type="text" 
+            placeholder="O pega aquí la URL de una foto" 
+            class="w-full text-[11px] p-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white">
+        </div>
+
+        <div>
+          <label class="text-xs font-bold text-slate-700 block mb-1">Descripción y Medidas:</label>
+          <textarea 
+            v-model="newItem.description"
+            rows="2" 
+            placeholder="Describe las dimensiones, material, cuidados especiales..." 
+            class="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500"></textarea>
+        </div>
+
+        <button 
+          @click="publishItem"
+          class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold py-3 rounded-2xl shadow-md transition">
+          ✓ Publicar Artículo Inmediatamente
+        </button>
+
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- NOTIFICACIÓN TOAST FLOTANTE -->
+  <div 
+    v-if="toastMessage" 
+    class="fixed bottom-5 right-5 z-50 bg-slate-900 text-white px-4 py-3 rounded-2xl shadow-2xl border border-slate-700 flex items-center space-x-2 text-xs animate-bounce">
+    <span>✨</span>
+    <span>{{ toastMessage }}</span>
+  </div>
+
+</div>
+
+<!-- LOGICA VUE 3 REACTIVA -->
+<script>
+  const { createApp } = Vue;
+
+  createApp({
+    data() {
+      return {
+        activeRole: 'renter', // 'renter' (comprador), 'owner' (vendedor/dueño), 'admin' (administrador)
+        isMobileView: false,
+        toastMessage: '',
+        searchQuery: '',
+        selectedCity: 'Todas',
+        selectedCategory: 'Todos',
+        
+        // Modales
+        selectedItem: null,
+        showCheckoutModal: false,
+        showMyRentalsModal: false,
+        showPublishModal: false,
+        
+        // Tabs internas
+        ownerTab: 'items',
+        adminTab: 'logistics',
+        
+        // Calculadora de alquiler
+        bookingDurationType: 'dia', // 'dia', 'semana', 'mes'
+        bookingQuantity: 3,
+        defaultTransportFee: 250,
+        defaultServiceFee: 150,
+        
+        // Formulario de checkout
+        checkoutForm: {
+          address: 'Colonia Los Castaños, 4ta calle, casa #12',
+          phone: '+504 9988-7766',
+          paymentMethod: 'card'
+        },
+
+        // Nuevo artículo para publicar
+        newItem: {
+          title: '',
+          category: 'Mobiliario Hogar',
+          city: 'San Pedro Sula',
+          condition: 'Como nuevo',
+          deposit: 600,
+          priceDay: 90,
+          priceWeek: 400,
+          priceMonth: 1200,
+          image: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=800&q=80',
+          description: 'Mueble en excelente condición listo para entrega con MobiRent.'
+        },
+
+        // Categorías
+        categories: [
+          { name: 'Todos', icon: '✨' },
+          { name: 'Mobiliario Hogar', icon: '🛋️' },
+          { name: 'Electrodomésticos', icon: '🧊' },
+          { name: 'Eventos y Fiestas', icon: '🎉' },
+          { name: 'Oficina y Escritorios', icon: '💼' },
+          { name: 'Catering y Gourmet', icon: '🍽️' },
+        ],
+
+        publishCategories: [
+          'Mobiliario Hogar',
+          'Electrodomésticos',
+          'Eventos y Fiestas',
+          'Oficina y Escritorios',
+          'Catering y Gourmet'
+        ],
+
+        imagePresets: [
+          { name: 'Sofá Gris', url: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=800&q=80' },
+          { name: 'Refrigeradora', url: 'https://images.unsplash.com/photo-1584992236310-6edddc08acff?auto=format&fit=crop&w=800&q=80' },
+          { name: 'Sillas Evento', url: 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=800&q=80' },
+          { name: 'Comedor Caoba', url: 'https://images.unsplash.com/photo-1617806118233-18e1de247200?auto=format&fit=crop&w=800&q=80' },
+          { name: 'Escritorio', url: 'https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&w=800&q=80' },
+          { name: 'Chafing Dishes', url: 'https://images.unsplash.com/photo-1555244162-803834f70033?auto=format&fit=crop&w=800&q=80' }
+        ],
+
+        // Artículos precargados
+        items: [
+          {
+            id: 1,
+            title: 'Sofá Seccional Moderno Gris Oxford',
+            category: 'Mobiliario Hogar',
+            condition: 'Como nuevo',
+            city: 'San Pedro Sula',
+            priceDay: 150,
+            priceWeek: 650,
+            priceMonth: 1800,
+            deposit: 1000,
+            ownerName: 'Gabriela Flores',
+            rating: 4.9,
+            reviewsCount: 14,
+            image: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=800&q=80',
+            description: 'Sofá de 3 piezas tapizado en tela lavable premium. Ideal para apartamentos en alquiler temporal o visitas familiares.',
+            status: 'activo'
+          },
+          {
+            id: 2,
+            title: 'Refrigeradora Smart Inverter 16 Pies',
+            category: 'Electrodomésticos',
+            condition: 'Excelente',
+            city: 'Tegucigalpa',
+            priceDay: 130,
+            priceWeek: 550,
+            priceMonth: 1600,
+            deposit: 1500,
+            ownerName: 'Carlos Midence',
+            rating: 5.0,
+            reviewsCount: 8,
+            image: 'https://images.unsplash.com/photo-1584992236310-6edddc08acff?auto=format&fit=crop&w=800&q=80',
+            description: 'Ahorro de energía A+++, dispensador de agua purificada y congelador frost-free. Muy espaciosa y silenciosa.',
+            status: 'activo'
+          },
+          {
+            id: 3,
+            title: 'Set de 50 Sillas Tiffany Doradas para Eventos',
+            category: 'Eventos y Fiestas',
+            condition: 'Excelente',
+            city: 'San Pedro Sula',
+            priceDay: 750,
+            priceWeek: 2600,
+            priceMonth: 5500,
+            deposit: 2000,
+            ownerName: 'Gabriela Flores',
+            rating: 4.8,
+            reviewsCount: 22,
+            image: 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=800&q=80',
+            description: 'Mobiliario elegante para bodas, aniversarios y recepciones corporativas. Incluye cojines blancos de vinil acolchado.',
+            status: 'activo'
+          },
+          {
+            id: 4,
+            title: 'Juego de Comedor Minimalista 6 Puestos',
+            category: 'Mobiliario Hogar',
+            condition: 'Como nuevo',
+            city: 'San Pedro Sula',
+            priceDay: 110,
+            priceWeek: 480,
+            priceMonth: 1400,
+            deposit: 900,
+            ownerName: 'Gabriela Flores',
+            rating: 4.7,
+            reviewsCount: 9,
+            image: 'https://images.unsplash.com/photo-1617806118233-18e1de247200?auto=format&fit=crop&w=800&q=80',
+            description: 'Mesa de madera de cedro con acabado mate y sillas ergonómicas tapizadas. Ideal para profesionales en traslados de trabajo.',
+            status: 'activo'
+          },
+          {
+            id: 5,
+            title: 'Estación de Chafing Dishes (Buffet Catering)',
+            category: 'Catering y Gourmet',
+            condition: 'Excelente',
+            city: 'Tegucigalpa',
+            priceDay: 280,
+            priceWeek: 850,
+            priceMonth: 2100,
+            deposit: 700,
+            ownerName: 'Mario Pineda',
+            rating: 4.9,
+            reviewsCount: 16,
+            image: 'https://images.unsplash.com/photo-1555244162-803834f70033?auto=format&fit=crop&w=800&q=80',
+            description: '4 calentadores de comida de acero inoxidable de 8 cuartos con bandejas dobles y tapas roll-top para eventos gourmet.',
+            status: 'activo'
+          },
+          {
+            id: 6,
+            title: 'Escritorio Ergonómico + Silla Ejecutiva de Malla',
+            category: 'Oficina y Escritorios',
+            condition: 'Buen estado',
+            city: 'San Pedro Sula',
+            priceDay: 80,
+            priceWeek: 350,
+            priceMonth: 950,
+            deposit: 500,
+            ownerName: 'Andrés Martínez',
+            rating: 4.6,
+            reviewsCount: 5,
+            image: 'https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&w=800&q=80',
+            description: 'Kit para Home Office completo. Escritorio de 1.40m con pasacables y silla ergonómica con soporte lumbar regulable.',
+            status: 'activo'
+          }
+        ],
+
+        // Alquileres / Pedidos en curso
+        rentals: [
+          {
+            id: 101,
+            itemId: 1,
+            itemTitle: 'Sofá Seccional Moderno Gris Oxford',
+            renterName: 'Daniel Hernández',
+            renterPhone: '+504 9845-1234',
+            ownerName: 'Gabriela Flores',
+            duration: '1 Mes',
+            durationType: 'Mes',
+            rentalFee: 1800,
+            transportFee: 250,
+            serviceFee: 150,
+            deposit: 1000,
+            totalPaid: 3200,
+            ownerPayout: 1800,
+            status: 'EN TRÁNSITO',
+            pickupAddress: 'Col. Trejo, 21 Calle, San Pedro Sula',
+            deliveryAddress: 'Condominios Panorama II, Apto 502, SPS'
+          },
+          {
+            id: 102,
+            itemId: 3,
+            itemTitle: 'Set de 50 Sillas Tiffany Doradas',
+            renterName: 'Eventos Gala HN',
+            renterPhone: '+504 9566-7788',
+            ownerName: 'Gabriela Flores',
+            duration: '3 Días',
+            durationType: 'Día',
+            rentalFee: 2250,
+            transportFee: 350,
+            serviceFee: 250,
+            deposit: 2000,
+            totalPaid: 4850,
+            ownerPayout: 2250,
+            status: 'ENTREGADA',
+            pickupAddress: 'Col. Moderna, San Pedro Sula',
+            deliveryAddress: 'Club Hondureño Árabe, Salón Jordán, SPS'
+          }
+        ]
+      };
+    },
+
+    computed: {
+      filteredItems() {
+        return this.items.filter(item => {
+          const matchesCategory = this.selectedCategory === 'Todos' || item.category === this.selectedCategory;
+          const matchesCity = this.selectedCity === 'Todas' || item.city === this.selectedCity;
+          const matchesSearch = item.title.toLowerCase().includes(this.searchQuery.toLowerCase()) || 
+                                item.description.toLowerCase().includes(this.searchQuery.toLowerCase());
+          return matchesCategory && matchesCity && matchesSearch;
+        });
+      },
+
+      ownerArticles() {
+        // En este prototipo asumimos que el usuario activo es 'Gabriela Flores'
+        return this.items.filter(item => item.ownerName === 'Gabriela Flores');
+      },
+
+      ownerRentals() {
+        return this.rentals.filter(r => r.ownerName === 'Gabriela Flores');
+      },
+
+      ownerStats() {
+        const totalEarnings = this.ownerRentals.reduce((sum, r) => sum + r.ownerPayout, 0);
+        const activeRentals = this.ownerRentals.filter(r => r.status !== 'DEVUELTA').length;
+        return { totalEarnings, activeRentals };
+      },
+
+      adminMetrics() {
+        const totalRevenue = this.rentals.reduce((sum, r) => sum + r.serviceFee + (r.transportFee * 0.3), 0);
+        const escrowDeposits = this.rentals.reduce((sum, r) => sum + r.deposit, 0);
+        return {
+          totalRevenue: Math.round(totalRevenue),
+          escrowDeposits
+        };
+      },
+
+      pendingDeliveriesCount() {
+        return this.rentals.filter(r => ['ASIGNADA', 'EN RECOGIDA', 'EN TRÁNSITO'].includes(r.status)).length;
+      },
+
+      pendingRequestsCount() {
+        return this.rentals.filter(r => r.status === 'PENDIENTE_APROBACION').length;
+      },
+
+      myRentalsCount() {
+        return this.rentals.length;
+      },
+
+      bookingDurationTypeLabel() {
+        if (this.bookingDurationType === 'dia') return this.bookingQuantity === 1 ? 'Día' : 'Días';
+        if (this.bookingDurationType === 'semana') return this.bookingQuantity === 1 ? 'Semana' : 'Semanas';
+        return this.bookingQuantity === 1 ? 'Mes' : 'Meses';
+      },
+
+      calculateRentalSubtotal() {
+        if (!this.selectedItem) return 0;
+        let unitPrice = this.selectedItem.priceDay;
+        if (this.bookingDurationType === 'semana') unitPrice = this.selectedItem.priceWeek;
+        if (this.bookingDurationType === 'mes') unitPrice = this.selectedItem.priceMonth;
+        return unitPrice * this.bookingQuantity;
+      },
+
+      calculateRentalTotal() {
+        if (!this.selectedItem) return 0;
+        return this.calculateRentalSubtotal + this.defaultTransportFee + this.defaultServiceFee + this.selectedItem.deposit;
+      }
+    },
+
+    methods: {
+      decreaseQuantity() {
+        if (this.bookingQuantity > 1) {
+          this.bookingQuantity--;
+        }
+      },
+
+      increaseQuantity() {
+        this.bookingQuantity++;
+      },
+
+      showToast(msg) {
+        this.toastMessage = msg;
+        setTimeout(() => {
+          this.toastMessage = '';
+        }, 3200);
+      },
+
+      toggleDeviceMode() {
+        this.isMobileView = !this.isMobileView;
+      },
+
+      openItemDetail(item) {
+        this.selectedItem = item;
+        this.bookingQuantity = 2;
+        this.bookingDurationType = 'dia';
+      },
+
+      startCheckout() {
+        this.showCheckoutModal = true;
+      },
+
+      confirmBooking() {
+        const newRental = {
+          id: Math.floor(100 + Math.random() * 900),
+          itemId: this.selectedItem.id,
+          itemTitle: this.selectedItem.title,
+          renterName: 'Daniel Hernández (Tú)',
+          renterPhone: this.checkoutForm.phone,
+          ownerName: this.selectedItem.ownerName,
+          duration: `${this.bookingQuantity} ${this.bookingDurationTypeLabel}`,
+          durationType: this.bookingDurationTypeLabel,
+          rentalFee: this.calculateRentalSubtotal,
+          transportFee: this.defaultTransportFee,
+          serviceFee: this.defaultServiceFee,
+          deposit: this.selectedItem.deposit,
+          totalPaid: this.calculateRentalTotal,
+          ownerPayout: this.calculateRentalSubtotal,
+          status: 'EN RECOGIDA',
+          pickupAddress: 'Col. Moderna, San Pedro Sula',
+          deliveryAddress: this.checkoutForm.address
+        };
+
+        this.rentals.unshift(newRental);
+        this.showCheckoutModal = false;
+        this.selectedItem = null;
+        this.showToast('¡Alquiler confirmado con éxito! MobiRent ya programó la recogida.');
+        this.showMyRentalsModal = true;
+      },
+
+      publishItem() {
+        if (!this.newItem.title) {
+          alert('Por favor ingresa un título para tu artículo');
+          return;
+        }
+
+        const createdItem = {
+          id: Date.now(),
+          title: this.newItem.title,
+          category: this.newItem.category,
+          condition: this.newItem.condition,
+          city: this.newItem.city,
+          priceDay: this.newItem.priceDay || 100,
+          priceWeek: this.newItem.priceWeek || 450,
+          priceMonth: this.newItem.priceMonth || 1300,
+          deposit: this.newItem.deposit || 500,
+          ownerName: 'Gabriela Flores',
+          rating: 5.0,
+          reviewsCount: 1,
+          image: this.newItem.image,
+          description: this.newItem.description,
+          status: 'activo'
+        };
+
+        this.items.unshift(createdItem);
+        this.showPublishModal = false;
+        this.showToast('¡Artículo publicado en MobiRent! Ya aparece en el catálogo.');
+        
+        // Reset form
+        this.newItem.title = '';
+      },
+
+      toggleItemStatus(item) {
+        item.status = item.status === 'activo' ? 'pausado' : 'activo';
+        this.showToast(`Artículo ${item.status === 'activo' ? 'activado' : 'pausado'}`);
+      },
+
+      deleteItem(itemId) {
+        if (confirm('¿Seguro que deseas eliminar este artículo de MobiRent?')) {
+          this.items = this.items.filter(i => i.id !== itemId);
+          this.showToast('Artículo eliminado del catálogo');
+        }
+      },
+
+      setRentalStatus(rentalId, newStatus) {
+        const rental = this.rentals.find(r => r.id === rentalId);
+        if (rental) {
+          rental.status = newStatus;
+          this.showToast(`Estado del pedido #${rentalId} actualizado a: ${newStatus}`);
+        }
+      },
+
+      approveRentalByOwner(rentalId) {
+        this.setRentalStatus(rentalId, 'ASIGNADA');
+      },
+
+      rejectRentalByOwner(rentalId) {
+        this.rentals = this.rentals.filter(r => r.id !== rentalId);
+        this.showToast('Solicitud rechazada');
+      },
+
+      requestPayout() {
+        this.showToast('¡Solicitud de retiro enviada! Se depositará en tu cuenta BAC.');
+      },
+
+      getRentalBadgeClass(status) {
+        switch(status) {
+          case 'PENDIENTE': return 'bg-amber-100 text-amber-800';
+          case 'ASIGNADA': return 'bg-indigo-100 text-indigo-800';
+          case 'EN RECOGIDA': return 'bg-sky-100 text-sky-800';
+          case 'EN TRÁNSITO': return 'bg-blue-100 text-blue-800 animate-pulse';
+          case 'ENTREGADA': return 'bg-emerald-100 text-emerald-800';
+          case 'DEVUELTA': return 'bg-purple-100 text-purple-800';
+          default: return 'bg-slate-100 text-slate-800';
+        }
+      },
+
+      getAdminBadgeClass(status) {
+        switch(status) {
+          case 'PENDIENTE': return 'bg-amber-900/60 text-amber-300 border border-amber-700';
+          case 'ASIGNADA': return 'bg-indigo-900/60 text-indigo-300 border border-indigo-700';
+          case 'EN RECOGIDA': return 'bg-sky-900/60 text-sky-300 border border-sky-700';
+          case 'EN TRÁNSITO': return 'bg-blue-900/60 text-blue-300 border border-blue-700';
+          case 'ENTREGADA': return 'bg-emerald-900/60 text-emerald-300 border border-emerald-700';
+          case 'DEVUELTA': return 'bg-purple-900/60 text-purple-300 border border-purple-700';
+          default: return 'bg-slate-800 text-slate-300';
+        }
+      },
+
+      resetData() {
+        if (confirm('¿Restablecer los datos de ejemplo del prototipo?')) {
+          location.reload();
+        }
+      }
+    }
+  }).mount('#app');
+</script>
+
+</body>
+</html>
