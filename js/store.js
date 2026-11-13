@@ -16,6 +16,10 @@ const store = reactive({
   isMobileView: false,
   toastMessage: '',
 
+  // Modo de entrega de avance para el cliente (2/3 completado)
+  // Si la URL contiene ?full=true o se desactiva manualmente, muestra el 100%
+  isClientAdvanceMode: !new URLSearchParams(window.location.search).has('full'),
+
   // Parámetros de búsqueda y filtros
   searchQuery: '',
   selectedCity: 'Todas',
