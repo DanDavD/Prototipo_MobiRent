@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
   <title>MobiRent - Alquiler de Mobiliario y Equipamiento</title>
   
   <!-- Tailwind CSS CDN -->
@@ -60,25 +60,16 @@
     <!-- Barra Superior de Navegación -->
     <navbar-component></navbar-component>
 
-    <!-- Contenedor Principal (Soporta Pantalla Completa o Modo Smartphone) -->
-    <main 
-      class="flex-1" 
-      :class="store.isMobileView ? 'py-8 px-4 flex justify-center items-start bg-neutral-100' : 'w-full'">
-      
-      <div :class="store.isMobileView ? 'mobile-frame-wrapper w-full' : 'w-full'">
-        <div v-if="store.isMobileView" class="mobile-notch"></div>
+    <!-- Contenedor Principal Adaptativo -->
+    <main class="flex-1 w-full">
+      <!-- 1. Vista Arrendatario / Comprador -->
+      <renter-view v-if="store.activeRole === 'renter'"></renter-view>
 
-        <!-- 1. Vista Arrendatario / Comprador -->
-        <renter-view v-if="store.activeRole === 'renter'"></renter-view>
+      <!-- 2. Vista Arrendador / Vendedor (Dueño) -->
+      <owner-view v-else-if="store.activeRole === 'owner'"></owner-view>
 
-        <!-- 2. Vista Arrendador / Vendedor (Dueño) -->
-        <owner-view v-else-if="store.activeRole === 'owner'"></owner-view>
-
-        <!-- 3. Vista Administrador (Panel Central & Logística) -->
-        <admin-view v-else-if="store.activeRole === 'admin'"></admin-view>
-
-      </div>
-
+      <!-- 3. Vista Operaciones -->
+      <admin-view v-else-if="store.activeRole === 'admin'"></admin-view>
     </main>
 
     <!-- Capa de Modales (Detalle, Checkout, Seguimiento, Publicación y Mensajes) -->
@@ -86,9 +77,7 @@
 
   </div>
 
-  <!-- ============================================================== -->
-  <!-- SCRIPTS MODULARES DE LA APLICACIÓN                             -->
-  <!-- ============================================================== -->
+  <!-- Scripts Modulares -->
   <script src="js/data.js"></script>
   <script src="js/store.js"></script>
   <script src="js/components/Navbar.js"></script>

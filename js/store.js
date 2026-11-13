@@ -13,12 +13,7 @@ const rawData = window.MobiRentData;
 const store = reactive({
   // Navegación de roles y visualización
   activeRole: 'renter', // 'renter', 'owner', 'admin'
-  isMobileView: false,
   toastMessage: '',
-
-  // Modo de entrega de avance para el cliente (2/3 completado)
-  // Si la URL contiene ?full=true o se desactiva manualmente, muestra el 100%
-  isClientAdvanceMode: !new URLSearchParams(window.location.search).has('full'),
 
   // Parámetros de búsqueda y filtros
   searchQuery: '',
