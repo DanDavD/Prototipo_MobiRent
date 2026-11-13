@@ -13,6 +13,7 @@ const rawData = window.MobiRentData;
 const store = reactive({
   // Navegación de roles y visualización
   activeRole: 'renter', // 'renter', 'owner', 'admin'
+  showFullAdmin: false, // Controla si se muestra el panel completo de admin o la vista sutil de avance
   toastMessage: '',
 
   // Parámetros de búsqueda y filtros

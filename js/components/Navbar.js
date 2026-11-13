@@ -48,13 +48,30 @@ window.NavbarComponent = {
             </button>
           </nav>
 
-          <!-- Acción Superior Derecha (Estilo Airbnb: Publicar Artículo) -->
-          <div class="flex items-center space-x-2">
+          <!-- Acciones Superiores: Publicar y Modo Administrador (Optimizados para móvil y desktop) -->
+          <div class="flex items-center space-x-1.5 sm:space-x-2 shrink-0">
+            
+            <!-- Botón Publicar Artículo -->
             <button 
               @click="store.showPublishModal = true"
-              class="hidden sm:inline-flex text-xs font-semibold text-charcoal hover:bg-surface-subtle px-3.5 py-1.5 rounded-full border border-surface-border transition-colors">
-              Publicar artículo
+              class="inline-flex items-center space-x-1 text-xs font-semibold text-charcoal bg-surface-subtle hover:bg-neutral-100 active:scale-95 px-2.5 sm:px-3.5 py-1.5 rounded-full border border-surface-border transition-all shadow-sm">
+              <svg class="w-3.5 h-3.5 text-forest" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M12 4v16m8-8H4"/>
+              </svg>
+              <span class="text-[11px] sm:text-xs">Publicar</span>
             </button>
+
+            <!-- Botón Modo Administrador (Al lado de Publicar Artículo) -->
+            <button 
+              @click="toggleAdmin()"
+              class="inline-flex items-center space-x-1 text-xs font-semibold active:scale-95 px-2.5 sm:px-3 py-1.5 rounded-full border transition-all shadow-sm"
+              :class="store.activeRole === 'admin' && store.showFullAdmin ? 'bg-forest text-white border-forest' : 'text-charcoal bg-white hover:bg-surface-subtle border-surface-border'">
+              <svg class="w-3.5 h-3.5" :class="store.activeRole === 'admin' && store.showFullAdmin ? 'text-white' : 'text-forest'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+              </svg>
+              <span class="text-[11px] sm:text-xs">Admin</span>
+            </button>
+
           </div>
 
         </div>
@@ -115,6 +132,16 @@ window.NavbarComponent = {
     </div>
   `,
   setup() {
-    return { store: window.MobiRentStore };
+    const store = window.MobiRentStore;
+    const toggleAdmin = () => {
+      if (store.activeRole === 'admin' && store.showFullAdmin) {
+        store.activeRole = 'renter';
+        store.showFullAdmin = false;
+      } else {
+        store.activeRole = 'admin';
+        store.showFullAdmin = true;
+      }
+    };
+    return { store, toggleAdmin };
   }
 };
