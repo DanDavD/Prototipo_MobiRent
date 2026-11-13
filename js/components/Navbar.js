@@ -2,38 +2,29 @@
  * ==============================================================
  * Componente: Navbar (js/components/Navbar.js)
  * ==============================================================
- * Navegación optimizada para móvil y escritorio:
- * - Escritorio/Tablet: Píldora segmentada superior estilo Airbnb.
- * - Móvil: Cabecera limpia y Barra de Navegación Inferior (Bottom Bar)
- *   ergonómica para uso con una sola mano y botones táctiles amplios.
+ * Barra de navegación sobria y minimalista:
+ * - Logotipo tipográfico puro sin íconos artificiales.
+ * - Píldora segmentada central para alternar entre perfiles.
+ * - Barra inferior ergonómica en móviles para navegación fluida.
  */
 
 window.NavbarComponent = {
   template: `
     <div>
       
-      <!-- CABECERA SUPERIOR (Sticky) -->
+      <!-- CABECERA SUPERIOR -->
       <header class="bg-white border-b border-surface-border sticky top-0 z-30">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 py-3.5 flex items-center justify-between gap-3">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 py-3.5 flex items-center justify-between gap-4">
           
-          <!-- Marca / Logotipo -->
+          <!-- Marca / Logotipo Tipográfico Limpio -->
           <div 
-            class="flex items-center space-x-2.5 cursor-pointer select-none active:opacity-75 transition-opacity" 
+            class="flex items-center space-x-2 cursor-pointer select-none active:opacity-75 transition-opacity" 
             @click="store.activeRole = 'renter'">
-            <div class="w-8 h-8 rounded-xl bg-forest flex items-center justify-center text-white shrink-0 shadow-sm">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
-              </svg>
-            </div>
-            <div>
-              <div class="flex items-center space-x-1.5">
-                <span class="font-bold text-base tracking-tight text-charcoal">mobirent</span>
-                <span class="text-[10px] uppercase font-bold tracking-wider text-charcoal-muted bg-surface-subtle border border-surface-border px-1.5 py-0.5 rounded">Honduras</span>
-              </div>
-            </div>
+            <span class="font-bold text-lg tracking-tight text-charcoal">mobirent</span>
+            <span class="text-[10px] uppercase font-bold tracking-wider text-charcoal-muted bg-surface-subtle border border-surface-border px-1.5 py-0.5 rounded">Honduras</span>
           </div>
 
-          <!-- Selector de Rol en Escritorio / Tablet (Pantallas Medianas y Grandes) -->
+          <!-- Selector de Vista Central (Escritorio / Tablet) -->
           <nav class="hidden sm:flex items-center bg-surface-subtle p-1 rounded-full border border-surface-border">
             <button 
               @click="store.activeRole = 'renter'" 
@@ -57,27 +48,28 @@ window.NavbarComponent = {
             </button>
           </nav>
 
-          <!-- Controles de Utilidad (Modo móvil en escritorio y Reset) -->
-          <div class="flex items-center space-x-2">
+          <!-- Acciones Superiores: Publicar y Modo Administrador (Optimizados para móvil y desktop) -->
+          <div class="flex items-center space-x-1.5 sm:space-x-2 shrink-0">
             
-            <!-- Botón de Simulación Móvil (Solo visible en pantallas de computadora) -->
+            <!-- Botón Publicar Artículo -->
             <button 
-              @click="store.toggleDeviceMode()"
-              class="hidden md:flex items-center space-x-1.5 px-3 py-1.5 rounded-full text-xs font-medium text-charcoal border border-surface-border hover:border-charcoal transition-colors">
-              <svg class="w-3.5 h-3.5 text-charcoal-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+              @click="store.showPublishModal = true"
+              class="inline-flex items-center space-x-1 text-xs font-semibold text-charcoal bg-surface-subtle hover:bg-neutral-100 active:scale-95 px-2.5 sm:px-3.5 py-1.5 rounded-full border border-surface-border transition-all shadow-sm">
+              <svg class="w-3.5 h-3.5 text-forest" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M12 4v16m8-8H4"/>
               </svg>
-              <span>{{ store.isMobileView ? 'Pantalla completa' : 'Marco móvil' }}</span>
+              <span class="text-[11px] sm:text-xs">Publicar</span>
             </button>
 
-            <!-- Botón Restablecer Datos -->
+            <!-- Botón Modo Administrador (Al lado de Publicar Artículo) -->
             <button 
-              @click="store.resetData()" 
-              title="Restablecer datos de prueba"
-              class="p-2 rounded-full text-charcoal-muted hover:text-charcoal hover:bg-surface-subtle transition-colors">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+              @click="toggleAdmin()"
+              class="inline-flex items-center space-x-1 text-xs font-semibold active:scale-95 px-2.5 sm:px-3 py-1.5 rounded-full border transition-all shadow-sm"
+              :class="store.activeRole === 'admin' && store.showFullAdmin ? 'bg-forest text-white border-forest' : 'text-charcoal bg-white hover:bg-surface-subtle border-surface-border'">
+              <svg class="w-3.5 h-3.5" :class="store.activeRole === 'admin' && store.showFullAdmin ? 'text-white' : 'text-forest'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
               </svg>
+              <span class="text-[11px] sm:text-xs">Admin</span>
             </button>
 
           </div>
@@ -85,12 +77,10 @@ window.NavbarComponent = {
         </div>
       </header>
 
-      <!-- BARRA DE NAVEGACIÓN INFERIOR PARA MÓVILES (Bottom Bar estilo App nativa) -->
-      <!-- Ocupa la parte inferior de la pantalla en dispositivos móviles para acceso ergonómico con el pulgar -->
+      <!-- BARRA DE NAVEGACIÓN INFERIOR PARA MÓVILES -->
       <nav class="sm:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur-md border-t border-surface-border shadow-bottom-nav safe-bottom">
         <div class="grid grid-cols-4 h-14">
           
-          <!-- Botón 1: Explorar / Catálogo -->
           <button 
             @click="store.activeRole = 'renter'" 
             class="flex flex-col items-center justify-center space-y-1 transition-colors"
@@ -101,7 +91,6 @@ window.NavbarComponent = {
             <span class="text-[10px] tracking-tight">Explorar</span>
           </button>
 
-          <!-- Botón 2: Anfitrión / Propietario -->
           <button 
             @click="store.activeRole = 'owner'" 
             class="flex flex-col items-center justify-center space-y-1 transition-colors"
@@ -112,7 +101,6 @@ window.NavbarComponent = {
             <span class="text-[10px] tracking-tight">Anfitrión</span>
           </button>
 
-          <!-- Botón 3: Operaciones / Logística -->
           <button 
             @click="store.activeRole = 'admin'" 
             class="flex flex-col items-center justify-center space-y-1 transition-colors"
@@ -123,7 +111,6 @@ window.NavbarComponent = {
             <span class="text-[10px] tracking-tight">Operaciones</span>
           </button>
 
-          <!-- Botón 4: Mis Alquileres (Directo) -->
           <button 
             @click="store.showMyRentalsModal = true" 
             class="flex flex-col items-center justify-center space-y-1 transition-colors relative"
@@ -145,6 +132,16 @@ window.NavbarComponent = {
     </div>
   `,
   setup() {
-    return { store: window.MobiRentStore };
+    const store = window.MobiRentStore;
+    const toggleAdmin = () => {
+      if (store.activeRole === 'admin' && store.showFullAdmin) {
+        store.activeRole = 'renter';
+        store.showFullAdmin = false;
+      } else {
+        store.activeRole = 'admin';
+        store.showFullAdmin = true;
+      }
+    };
+    return { store, toggleAdmin };
   }
 };

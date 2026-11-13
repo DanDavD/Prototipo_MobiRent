@@ -25,14 +25,26 @@ window.OwnerViewComponent = {
             <p class="text-xs text-charcoal-muted mt-1">Monetice sus pertenencias en desuso con logística centralizada.</p>
           </div>
 
-          <button 
-            @click="store.showPublishModal = true"
-            class="w-full sm:w-auto bg-forest hover:bg-forest-hover text-white text-xs font-bold py-3 sm:py-2 px-5 rounded-xl sm:rounded-full shadow-sm transition-all duration-150 flex items-center justify-center space-x-2">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-            </svg>
-            <span>Publicar artículo</span>
-          </button>
+          <!-- Acciones de Anfitrión: Publicar y Modo Administrador -->
+          <div class="flex items-center gap-2 w-full sm:w-auto">
+            <button 
+              @click="store.showPublishModal = true"
+              class="flex-1 sm:flex-initial bg-forest hover:bg-forest-hover text-white text-xs font-bold py-2.5 sm:py-2 px-4 rounded-xl sm:rounded-full shadow-sm transition-all duration-150 flex items-center justify-center space-x-1.5 active:scale-95">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+              </svg>
+              <span>Publicar artículo</span>
+            </button>
+
+            <button 
+              @click="store.activeRole = 'admin'; store.showFullAdmin = true"
+              class="sm:flex-initial bg-white hover:bg-surface-subtle text-charcoal text-xs font-semibold py-2.5 sm:py-2 px-3.5 rounded-xl sm:rounded-full border border-surface-border shadow-sm transition-all duration-150 flex items-center justify-center space-x-1.5 active:scale-95">
+              <svg class="w-4 h-4 text-forest" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+              </svg>
+              <span>Modo Admin</span>
+            </button>
+          </div>
         </div>
 
         <!-- Tarjetas de Métricas (2x2 en móvil, 4x1 en tablet/desktop) -->
