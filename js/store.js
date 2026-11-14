@@ -343,7 +343,7 @@ const store = reactive({
       return true;
     }
 
-    this.loginForm.error = 'Correo o contraseña incorrectos. Utilice las cuentas de prueba indicadas.';
+    this.loginForm.error = 'Correo electrónico o contraseña incorrectos.';
     return false;
   },
 
