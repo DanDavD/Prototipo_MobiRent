@@ -43,7 +43,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
   <!-- Estilos Globales -->
-  <link rel="stylesheet" href="css/styles.css?v=2.0">
+  <link rel="stylesheet" href="css/styles.css?v=3.0">
 
   <!-- Vue 3 CDN (jsDelivr con Fallback) -->
   <script src="https://cdn.jsdelivr.net/npm/vue@3.4.21/dist/vue.global.prod.js"></script>
@@ -57,35 +57,46 @@
 
   <div id="app" class="min-h-screen flex flex-col bg-white">
     
-    <!-- Barra Superior de Navegación -->
-    <navbar-component></navbar-component>
+    <!-- 1. Pantalla de Inicio de Sesión (Cuando no hay usuario autenticado) -->
+    <login-view v-if="!store.currentUser"></login-view>
 
-    <!-- Contenedor Principal Adaptativo -->
-    <main class="flex-1 w-full">
-      <!-- 1. Vista Arrendatario / Comprador -->
-      <renter-view v-if="store.activeRole === 'renter'"></renter-view>
+    <!-- 2. Plataforma Autenticada -->
+    <div v-else class="min-h-screen flex flex-col bg-white">
+      
+      <!-- Barra Superior de Navegación -->
+      <navbar-component></navbar-component>
 
-      <!-- 2. Vista Arrendador / Vendedor (Dueño) -->
-      <owner-view v-else-if="store.activeRole === 'owner'"></owner-view>
+      <!-- Contenedor Principal Adaptativo -->
+      <main class="flex-1 w-full">
+        <!-- Vistas del Rol Cliente (cliente@gmail.com) -->
+        <template v-if="store.currentUser.role === 'client'">
+          <renter-view v-if="store.activeRole === 'renter'"></renter-view>
+          <owner-view v-else-if="store.activeRole === 'owner'"></owner-view>
+        </template>
 
-      <!-- 3. Vista Operaciones -->
-      <admin-view v-else-if="store.activeRole === 'admin'"></admin-view>
-    </main>
+        <!-- Vista del Rol Administrador (admin@gmail.com) -->
+        <template v-else-if="store.currentUser.role === 'admin'">
+          <admin-view></admin-view>
+        </template>
+      </main>
 
-    <!-- Capa de Modales (Detalle, Checkout, Seguimiento, Publicación y Mensajes) -->
-    <modals-component></modals-component>
+      <!-- Capa de Modales (Solo para cliente) -->
+      <modals-component v-if="store.currentUser.role === 'client'"></modals-component>
+
+    </div>
 
   </div>
 
   <!-- Scripts Modulares (con control de caché) -->
-  <script src="js/data.js?v=2.1"></script>
-  <script src="js/store.js?v=2.1"></script>
-  <script src="js/components/Navbar.js?v=2.1"></script>
-  <script src="js/components/RenterView.js?v=2.1"></script>
-  <script src="js/components/OwnerView.js?v=2.1"></script>
-  <script src="js/components/AdminView.js?v=2.1"></script>
-  <script src="js/components/Modals.js?v=2.1"></script>
-  <script src="js/app.js?v=2.1"></script>
+  <script src="js/data.js?v=3.0"></script>
+  <script src="js/store.js?v=3.0"></script>
+  <script src="js/components/LoginView.js?v=3.0"></script>
+  <script src="js/components/Navbar.js?v=3.0"></script>
+  <script src="js/components/RenterView.js?v=3.0"></script>
+  <script src="js/components/OwnerView.js?v=3.0"></script>
+  <script src="js/components/AdminView.js?v=3.0"></script>
+  <script src="js/components/Modals.js?v=3.0"></script>
+  <script src="js/app.js?v=3.0"></script>
 
 </body>
 </html>

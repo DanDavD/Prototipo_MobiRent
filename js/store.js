@@ -11,9 +11,18 @@ const { reactive } = Vue;
 const rawData = window.MobiRentData;
 
 const store = reactive({
+  // Autenticación de usuarios
+  currentUser: null, // null | { email: 'cliente@gmail.com', name: 'Carlos Mendoza', role: 'client' } | { email: 'admin@gmail.com', name: 'Administrador MobiRent', role: 'admin' }
+  loginForm: {
+    email: '',
+    password: '',
+    error: '',
+    showPassword: false
+  },
+
   // Navegación de roles y visualización
   activeRole: 'renter', // 'renter', 'owner', 'admin'
-  showFullAdmin: false, // Controla si se muestra el panel completo de admin o la vista sutil de avance
+  showFullAdmin: false,
   toastMessage: '',
 
   // Parámetros de búsqueda y filtros
@@ -289,9 +298,89 @@ const store = reactive({
 
   resetData() {
     if (confirm('¿Restablecer los datos de demostración del sistema?')) {
+      localStorage.removeItem('mobirent_auth_user');
       location.reload();
     }
+  },
+
+  // ==============================================================
+  // MÉTODOS DE AUTENTICACIÓN
+  // ==============================================================
+
+  login(email, password) {
+    const cleanEmail = (email || '').trim().toLowerCase();
+    const cleanPassword = (password || '').trim();
+
+    if (cleanEmail === 'cliente@gmail.com' && cleanPassword === 'contra123') {
+      this.currentUser = {
+        email: 'cliente@gmail.com',
+        name: 'Carlos Mendoza',
+        role: 'client'
+      };
+      this.activeRole = 'renter';
+      this.showFullAdmin = false;
+      this.loginForm.error = '';
+      try {
+        localStorage.setItem('mobirent_auth_user', JSON.stringify(this.currentUser));
+      } catch (e) {}
+      this.showToast('Bienvenido, Carlos. Sesión iniciada.');
+      return true;
+    }
+
+    if (cleanEmail === 'admin@gmail.com' && cleanPassword === 'contra123') {
+      this.currentUser = {
+        email: 'admin@gmail.com',
+        name: 'Administración MobiRent',
+        role: 'admin'
+      };
+      this.activeRole = 'admin';
+      this.showFullAdmin = true;
+      this.loginForm.error = '';
+      try {
+        localStorage.setItem('mobirent_auth_user', JSON.stringify(this.currentUser));
+      } catch (e) {}
+      this.showToast('Acceso concedido al Centro de Operaciones.');
+      return true;
+    }
+
+    this.loginForm.error = 'Correo o contraseña incorrectos. Utilice las cuentas de prueba indicadas.';
+    return false;
+  },
+
+  fillAndLogin(email, password) {
+    this.loginForm.email = email;
+    this.loginForm.password = password;
+    return this.login(email, password);
+  },
+
+  logout() {
+    this.currentUser = null;
+    this.activeRole = 'renter';
+    this.showFullAdmin = false;
+    this.showCheckoutModal = false;
+    this.showMyRentalsModal = false;
+    this.showPublishModal = false;
+    this.loginForm.email = '';
+    this.loginForm.password = '';
+    this.loginForm.error = '';
+    try {
+      localStorage.removeItem('mobirent_auth_user');
+    } catch (e) {}
+    this.showToast('Sesión cerrada.');
   }
 });
+
+// Restauración de sesión persistente si existe
+try {
+  const savedUser = localStorage.getItem('mobirent_auth_user');
+  if (savedUser) {
+    const parsed = JSON.parse(savedUser);
+    if (parsed && (parsed.email === 'cliente@gmail.com' || parsed.email === 'admin@gmail.com')) {
+      store.currentUser = parsed;
+      store.activeRole = parsed.role === 'admin' ? 'admin' : 'renter';
+      store.showFullAdmin = (parsed.role === 'admin');
+    }
+  }
+} catch (e) {}
 
 window.MobiRentStore = store;

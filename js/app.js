@@ -16,6 +16,7 @@ const app = createApp({
 });
 
 // Registro de componentes modulares
+app.component('login-view', window.LoginViewComponent);
 app.component('navbar-component', window.NavbarComponent);
 app.component('renter-view', window.RenterViewComponent);
 app.component('owner-view', window.OwnerViewComponent);
