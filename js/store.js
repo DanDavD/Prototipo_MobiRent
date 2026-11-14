@@ -255,7 +255,50 @@ const store = reactive({
     const rental = this.rentals.find(r => r.id === rentalId);
     if (rental) {
       rental.status = newStatus;
-      this.showToast(`Estado de la orden #${rentalId} actualizado a ${newStatus}.`);
+      this.showToast(`Orden #${rentalId}: Estado cambiado a "${newStatus}".`);
+    }
+  },
+
+  getStageIndex(status) {
+    const map = {
+      'Asignado': 0,
+      'En recogida': 0,
+      'Pendiente de aprobación': 0,
+      'En tránsito': 1,
+      'Entregado': 2,
+      'Devuelto': 3
+    };
+    return map[status] !== undefined ? map[status] : 0;
+  },
+
+  advanceRentalStatus(rentalId) {
+    const rental = this.rentals.find(r => r.id === rentalId);
+    if (!rental) return;
+
+    const currentIndex = this.getStageIndex(rental.status);
+    const flow = ['En tránsito', 'Entregado', 'Devuelto'];
+
+    if (currentIndex < 3) {
+      const nextStatus = flow[currentIndex];
+      rental.status = nextStatus;
+      this.showToast(`Orden #${rentalId}: Avanzado a "${nextStatus}".`);
+    }
+  },
+
+  getNextActionTitle(status) {
+    switch(status) {
+      case 'Asignado':
+      case 'En recogida':
+      case 'Pendiente de aprobación':
+        return 'Poner en ruta de entrega →';
+      case 'En tránsito':
+        return 'Confirmar entrega al cliente ✓';
+      case 'Entregado':
+        return 'Registrar devolución y retorno →';
+      case 'Devuelto':
+        return 'Servicio finalizado';
+      default:
+        return 'Avanzar estado';
     }
   },
 
@@ -274,25 +317,21 @@ const store = reactive({
 
   getRentalBadgeClass(status) {
     switch(status) {
-      case 'Pendiente de aprobación': return 'bg-neutral-100 text-neutral-700 border border-neutral-200';
-      case 'Asignado': return 'bg-neutral-100 text-charcoal border border-neutral-300';
-      case 'En recogida': return 'bg-forest-light text-forest border border-forest-border';
-      case 'En tránsito': return 'bg-forest text-white';
-      case 'Entregado': return 'bg-neutral-900 text-white';
-      case 'Devuelto': return 'bg-neutral-100 text-neutral-600 border border-neutral-200';
-      default: return 'bg-neutral-100 text-neutral-700';
+      case 'Asignado': return 'bg-surface-subtle text-charcoal border border-surface-border';
+      case 'En tránsito': return 'bg-amber-50 text-amber-800 border border-amber-200';
+      case 'Entregado': return 'bg-forest text-white';
+      case 'Devuelto': return 'bg-neutral-100 text-charcoal-muted border border-surface-border';
+      default: return 'bg-surface-subtle text-charcoal';
     }
   },
 
   getAdminBadgeClass(status) {
     switch(status) {
-      case 'Pendiente de aprobación': return 'bg-neutral-100 text-neutral-700 border border-neutral-300';
-      case 'Asignado': return 'bg-neutral-100 text-charcoal border border-neutral-300';
-      case 'En recogida': return 'bg-forest-light text-forest border border-forest-border';
-      case 'En tránsito': return 'bg-forest text-white';
-      case 'Entregado': return 'bg-neutral-900 text-white';
-      case 'Devuelto': return 'bg-neutral-100 text-neutral-600 border border-neutral-200';
-      default: return 'bg-neutral-100 text-neutral-700';
+      case 'Asignado': return 'bg-surface-subtle text-charcoal border border-surface-border';
+      case 'En tránsito': return 'bg-amber-50 text-amber-800 border border-amber-200';
+      case 'Entregado': return 'bg-forest text-white';
+      case 'Devuelto': return 'bg-neutral-100 text-charcoal-muted border border-surface-border';
+      default: return 'bg-surface-subtle text-charcoal';
     }
   },
 

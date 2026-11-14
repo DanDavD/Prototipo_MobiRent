@@ -37,10 +37,10 @@ window.MobiRentData = {
 
   // Presets fotográficos para publicaciones nuevas
   imagePresets: [
-    { name: 'Refrigeradora Acero', url: 'https://images.unsplash.com/photo-1584992236310-6edddc08acff?auto=format&fit=crop&w=1200&q=80' },
+    { name: 'Refrigeradora Acero', url: 'https://images.unsplash.com/photo-1571175443880-49e1d25b2bc5?auto=format&fit=crop&w=1200&q=80' },
     { name: 'Lavadora Frontal', url: 'https://images.unsplash.com/photo-1626806787461-102c1bfaaea1?auto=format&fit=crop&w=1200&q=80' },
     { name: 'Mesa de Parota', url: 'https://images.unsplash.com/photo-1615066390971-03e4e1c36ddf?auto=format&fit=crop&w=1200&q=80' },
-    { name: 'Mesas de Banquete', url: 'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?auto=format&fit=crop&w=1200&q=80' },
+    { name: 'Mesas de Banquete', url: 'https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?auto=format&fit=crop&w=1200&q=80' },
     { name: 'Mesa de Juntas', url: 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1200&q=80' },
     { name: 'Sala Contemporánea', url: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=1200&q=80' }
   ],
@@ -61,7 +61,7 @@ window.MobiRentData = {
       ownerName: 'Gabriela Flores',
       rating: 4.96,
       reviewsCount: 19,
-      image: 'https://images.unsplash.com/photo-1584992236310-6edddc08acff?auto=format&fit=crop&w=1200&q=80',
+      image: 'https://images.unsplash.com/photo-1571175443880-49e1d25b2bc5?auto=format&fit=crop&w=1200&q=80',
       description: 'Compresor Digital Inverter de bajo consumo eléctrico. Sistema No Frost, bandejas de cristal templado ajustables y dispensador de agua exterior.',
       status: 'activo'
     },
@@ -205,7 +205,7 @@ window.MobiRentData = {
       ownerName: 'Gabriela Flores',
       rating: 4.95,
       reviewsCount: 31,
-      image: 'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?auto=format&fit=crop&w=1200&q=80',
+      image: 'https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?auto=format&fit=crop&w=1200&q=80',
       description: 'Estructura de polietileno de alta densidad con patas de acero tubular plegables. Capacidad para 6 a 8 personas por mesa.',
       status: 'activo'
     },
