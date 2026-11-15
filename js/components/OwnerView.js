@@ -1,3 +1,4 @@
+// File: js/components/OwnerView.js
 /**
  * ==============================================================
  * Componente: OwnerView (js/components/OwnerView.js)
@@ -25,24 +26,15 @@ window.OwnerViewComponent = {
             <p class="text-xs text-charcoal-muted mt-1">Monetice sus pertenencias en desuso con logística centralizada.</p>
           </div>
 
-          <!-- Acciones de Anfitrión: Publicar y Modo Administrador -->
-          <div class="flex items-center gap-2 w-full sm:w-auto">
+          <!-- Acción de Anfitrión: Publicar -->
+          <div class="w-full sm:w-auto">
             <button 
               @click="store.showPublishModal = true"
-              class="flex-1 sm:flex-initial bg-forest hover:bg-forest-hover text-white text-xs font-bold py-2.5 sm:py-2 px-4 rounded-xl sm:rounded-full shadow-sm transition-all duration-150 flex items-center justify-center space-x-1.5 active:scale-95">
+              class="w-full sm:w-auto bg-forest hover:bg-forest-hover text-white text-xs font-bold py-2.5 sm:py-2 px-4 rounded-xl sm:rounded-full shadow-sm transition-all duration-150 flex items-center justify-center space-x-1.5 active:scale-95">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
               </svg>
               <span>Publicar artículo</span>
-            </button>
-
-            <button 
-              @click="store.activeRole = 'admin'; store.showFullAdmin = true"
-              class="sm:flex-initial bg-white hover:bg-surface-subtle text-charcoal text-xs font-semibold py-2.5 sm:py-2 px-3.5 rounded-xl sm:rounded-full border border-surface-border shadow-sm transition-all duration-150 flex items-center justify-center space-x-1.5 active:scale-95">
-              <svg class="w-4 h-4 text-forest" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
-              </svg>
-              <span>Modo Admin</span>
             </button>
           </div>
         </div>
@@ -69,8 +61,11 @@ window.OwnerViewComponent = {
 
           <div class="p-3.5 sm:p-4 rounded-2xl border border-surface-border bg-white shadow-airbnb">
             <span class="text-[10px] font-bold text-charcoal-muted uppercase tracking-wider block">Valoración</span>
-            <div class="text-xl sm:text-2xl font-bold text-charcoal mt-1 flex items-baseline space-x-1">
-              <span>★ 4.9</span>
+            <div class="text-xl sm:text-2xl font-bold text-charcoal mt-1 flex items-center space-x-1">
+              <svg class="w-4 h-4 text-charcoal fill-current inline-block" viewBox="0 0 20 20">
+                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+              </svg>
+              <span>4.9</span>
               <span class="text-xs font-normal text-charcoal-muted">(18)</span>
             </div>
             <span class="text-[10px] text-charcoal-muted block mt-0.5">Excelente estado</span>

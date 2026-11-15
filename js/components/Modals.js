@@ -1,3 +1,4 @@
+// File: js/components/Modals.js
 /**
  * ==============================================================
  * Componente: Modals (js/components/Modals.js)

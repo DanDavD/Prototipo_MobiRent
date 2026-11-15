@@ -1,3 +1,4 @@
+/* File: css/styles.css */
 /* ==============================================================
    MobiRent Honduras - Estilos Globales (Mobile-First Airbnb Aesthetic)
    ============================================================== */
@@ -75,31 +76,4 @@ html, body {
 /* Soporte para área segura de iPhone / iPad */
 .safe-bottom {
   padding-bottom: max(1rem, env(safe-area-inset-bottom));
-}
-
-/* Marco de Celular para Presentación en Pantalla Grande */
-.mobile-frame-wrapper {
-  max-width: 420px;
-  margin: 0 auto;
-  border: 1px solid #E5E7EB;
-  border-radius: 40px;
-  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.10);
-  overflow: hidden;
-  min-height: 840px;
-  position: relative;
-  background: #FFFFFF;
-}
-
-.mobile-notch {
-  width: 120px;
-  height: 18px;
-  background: #E5E7EB;
-  margin: 0 auto;
-  border-bottom-left-radius: 12px;
-  border-bottom-right-radius: 12px;
-  position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 50;
 }

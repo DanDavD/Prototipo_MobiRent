@@ -1,9 +1,10 @@
+// File: js/store.js
 /**
  * ==============================================================
  * MobiRent - Gestor de Estado Central (js/store.js)
  * ==============================================================
  * Manejo reactivo de estado global, filtrado de inventario,
- * cotizador transparente y transiciones operativas.
+ * cotizador transparente, autenticación estricta y trazabilidad operativa.
  */
 
 const { reactive } = Vue;
@@ -11,9 +12,18 @@ const { reactive } = Vue;
 const rawData = window.MobiRentData;
 
 const store = reactive({
+  // Autenticación de usuarios
+  currentUser: null, // null | { email: 'cliente@gmail.com', name: 'Carlos Mendoza', role: 'client' } | { email: 'admin@gmail.com', name: 'Administrador MobiRent', role: 'admin' }
+  loginForm: {
+    email: '',
+    password: '',
+    error: '',
+    showPassword: false
+  },
+
   // Navegación de roles y visualización
   activeRole: 'renter', // 'renter', 'owner', 'admin'
-  showFullAdmin: false, // Controla si se muestra el panel completo de admin o la vista sutil de avance
+  showFullAdmin: false,
   toastMessage: '',
 
   // Parámetros de búsqueda y filtros
@@ -140,15 +150,13 @@ const store = reactive({
   // ACCIONES Y MÉTODOS OPERATIVOS
   // ==============================================================
 
-  showToast(msg) {
-    this.toastMessage = msg;
+  showToast(message) {
+    this.toastMessage = message;
     setTimeout(() => {
-      this.toastMessage = '';
-    }, 3200);
-  },
-
-  toggleDeviceMode() {
-    this.isMobileView = !this.isMobileView;
+      if (this.toastMessage === message) {
+        this.toastMessage = '';
+      }
+    }, 3500);
   },
 
   openItemDetail(item) {
@@ -157,8 +165,21 @@ const store = reactive({
     this.bookingDurationType = 'dia';
   },
 
-  startCheckout() {
+  closeItemDetail() {
+    this.selectedItem = null;
+  },
+
+  openCheckout(item) {
+    this.selectedItem = item;
     this.showCheckoutModal = true;
+  },
+
+  closeCheckout() {
+    this.showCheckoutModal = false;
+  },
+
+  increaseQuantity() {
+    this.bookingQuantity++;
   },
 
   decreaseQuantity() {
@@ -167,36 +188,33 @@ const store = reactive({
     }
   },
 
-  increaseQuantity() {
-    this.bookingQuantity++;
-  },
+  confirmCheckout() {
+    if (!this.selectedItem) return;
 
-  confirmBooking() {
     const newRental = {
       id: Math.floor(100 + Math.random() * 900),
       itemId: this.selectedItem.id,
       itemTitle: this.selectedItem.title,
-      renterName: 'Daniel Hernández',
+      renterName: this.currentUser ? this.currentUser.name : 'Carlos Mendoza',
       renterPhone: this.checkoutForm.phone,
       ownerName: this.selectedItem.ownerName,
       duration: `${this.bookingQuantity} ${this.bookingDurationTypeLabel}`,
-      durationType: this.bookingDurationTypeLabel,
+      durationType: this.bookingDurationType,
       rentalFee: this.calculateRentalSubtotal,
       transportFee: this.defaultTransportFee,
       serviceFee: this.defaultServiceFee,
       deposit: this.selectedItem.deposit,
       totalPaid: this.calculateRentalTotal,
       ownerPayout: this.calculateRentalSubtotal,
-      status: 'En recogida',
-      pickupAddress: 'Colonia Trejo, San Pedro Sula',
-      deliveryAddress: this.checkoutForm.address
+      status: 'Asignado',
+      pickupAddress: `${this.selectedItem.neighborhood}, ${this.selectedItem.city}`,
+      deliveryAddress: `${this.checkoutForm.address}, ${this.selectedItem.city}`
     };
 
     this.rentals.unshift(newRental);
-    this.showCheckoutModal = false;
-    this.selectedItem = null;
-    this.showToast('Reserva confirmada. La recogida ha sido programada con el transportista.');
-    this.showMyRentalsModal = true;
+    this.closeCheckout();
+    this.closeItemDetail();
+    this.showToast('¡Reserva confirmada con éxito! Inspección y flete en preparación.');
   },
 
   publishItem() {
@@ -246,7 +264,50 @@ const store = reactive({
     const rental = this.rentals.find(r => r.id === rentalId);
     if (rental) {
       rental.status = newStatus;
-      this.showToast(`Estado de la orden #${rentalId} actualizado a ${newStatus}.`);
+      this.showToast(`Orden #${rentalId}: Estado cambiado a "${newStatus}".`);
+    }
+  },
+
+  getStageIndex(status) {
+    const map = {
+      'Asignado': 0,
+      'En recogida': 0,
+      'Pendiente de aprobación': 0,
+      'En tránsito': 1,
+      'Entregado': 2,
+      'Devuelto': 3
+    };
+    return map[status] !== undefined ? map[status] : 0;
+  },
+
+  advanceRentalStatus(rentalId) {
+    const rental = this.rentals.find(r => r.id === rentalId);
+    if (!rental) return;
+
+    const currentIndex = this.getStageIndex(rental.status);
+    const flow = ['En tránsito', 'Entregado', 'Devuelto'];
+
+    if (currentIndex < 3) {
+      const nextStatus = flow[currentIndex];
+      rental.status = nextStatus;
+      this.showToast(`Orden #${rentalId}: Avanzado a "${nextStatus}".`);
+    }
+  },
+
+  getNextActionTitle(status) {
+    switch(status) {
+      case 'Asignado':
+      case 'En recogida':
+      case 'Pendiente de aprobación':
+        return 'Poner en ruta de entrega →';
+      case 'En tránsito':
+        return 'Confirmar entrega al cliente ✓';
+      case 'Entregado':
+        return 'Registrar devolución y retorno →';
+      case 'Devuelto':
+        return 'Servicio finalizado';
+      default:
+        return 'Avanzar estado';
     }
   },
 
@@ -265,33 +326,104 @@ const store = reactive({
 
   getRentalBadgeClass(status) {
     switch(status) {
-      case 'Pendiente de aprobación': return 'bg-neutral-100 text-neutral-700 border border-neutral-200';
-      case 'Asignado': return 'bg-neutral-100 text-charcoal border border-neutral-300';
-      case 'En recogida': return 'bg-forest-light text-forest border border-forest-border';
-      case 'En tránsito': return 'bg-forest text-white';
-      case 'Entregado': return 'bg-neutral-900 text-white';
-      case 'Devuelto': return 'bg-neutral-100 text-neutral-600 border border-neutral-200';
-      default: return 'bg-neutral-100 text-neutral-700';
+      case 'Asignado': return 'bg-surface-subtle text-charcoal border border-surface-border';
+      case 'En tránsito': return 'bg-amber-50 text-amber-800 border border-amber-200';
+      case 'Entregado': return 'bg-forest text-white';
+      case 'Devuelto': return 'bg-neutral-100 text-charcoal-muted border border-surface-border';
+      default: return 'bg-surface-subtle text-charcoal';
     }
   },
 
   getAdminBadgeClass(status) {
     switch(status) {
-      case 'Pendiente de aprobación': return 'bg-neutral-100 text-neutral-700 border border-neutral-300';
-      case 'Asignado': return 'bg-neutral-100 text-charcoal border border-neutral-300';
-      case 'En recogida': return 'bg-forest-light text-forest border border-forest-border';
-      case 'En tránsito': return 'bg-forest text-white';
-      case 'Entregado': return 'bg-neutral-900 text-white';
-      case 'Devuelto': return 'bg-neutral-100 text-neutral-600 border border-neutral-200';
-      default: return 'bg-neutral-100 text-neutral-700';
+      case 'Asignado': return 'bg-surface-subtle text-charcoal border border-surface-border';
+      case 'En tránsito': return 'bg-amber-50 text-amber-800 border border-amber-200';
+      case 'Entregado': return 'bg-forest text-white';
+      case 'Devuelto': return 'bg-neutral-100 text-charcoal-muted border border-surface-border';
+      default: return 'bg-surface-subtle text-charcoal';
     }
   },
 
   resetData() {
     if (confirm('¿Restablecer los datos de demostración del sistema?')) {
+      localStorage.removeItem('mobirent_auth_user');
       location.reload();
     }
+  },
+
+  // ==============================================================
+  // MÉTODOS DE AUTENTICACIÓN
+  // ==============================================================
+
+  login(email, password) {
+    const cleanEmail = (email || '').trim().toLowerCase();
+    const cleanPassword = (password || '').trim();
+
+    if (cleanEmail === 'cliente@gmail.com' && cleanPassword === 'contra123') {
+      this.currentUser = {
+        email: 'cliente@gmail.com',
+        name: 'Carlos Mendoza',
+        role: 'client'
+      };
+      this.activeRole = 'renter';
+      this.showFullAdmin = false;
+      this.loginForm.error = '';
+      try {
+        localStorage.setItem('mobirent_auth_user', JSON.stringify(this.currentUser));
+      } catch (e) {}
+      this.showToast('Bienvenido, Carlos. Sesión iniciada.');
+      return true;
+    }
+
+    if (cleanEmail === 'admin@gmail.com' && cleanPassword === 'contra123') {
+      this.currentUser = {
+        email: 'admin@gmail.com',
+        name: 'Administración MobiRent',
+        role: 'admin'
+      };
+      this.activeRole = 'admin';
+      this.showFullAdmin = true;
+      this.loginForm.error = '';
+      try {
+        localStorage.setItem('mobirent_auth_user', JSON.stringify(this.currentUser));
+      } catch (e) {}
+      this.showToast('Acceso concedido al Centro de Operaciones.');
+      return true;
+    }
+
+    this.loginForm.error = 'Correo electrónico o contraseña incorrectos.';
+    return false;
+  },
+
+  logout() {
+    this.currentUser = null;
+    this.activeRole = 'renter';
+    this.showFullAdmin = false;
+    this.showCheckoutModal = false;
+    this.showMyRentalsModal = false;
+    this.showPublishModal = false;
+    this.loginForm.email = '';
+    this.loginForm.password = '';
+    this.loginForm.error = '';
+    try {
+      localStorage.removeItem('mobirent_auth_user');
+    } catch (e) {}
+    this.showToast('Sesión cerrada.');
   }
 });
 
+// Restauración de sesión persistente si existe
+try {
+  const savedUser = localStorage.getItem('mobirent_auth_user');
+  if (savedUser) {
+    const parsed = JSON.parse(savedUser);
+    if (parsed && (parsed.email === 'cliente@gmail.com' || parsed.email === 'admin@gmail.com')) {
+      store.currentUser = parsed;
+      store.activeRole = parsed.role === 'admin' ? 'admin' : 'renter';
+      store.showFullAdmin = (parsed.role === 'admin');
+    }
+  }
+} catch (e) {}
+
+// Expose store globally
 window.MobiRentStore = store;

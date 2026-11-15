@@ -1,3 +1,4 @@
+// File: js/components/RenterView.js
 /**
  * ==============================================================
  * Componente: RenterView (js/components/RenterView.js)
