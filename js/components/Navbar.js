@@ -1,3 +1,4 @@
+// File: js/components/Navbar.js
 /**
  * ==============================================================
  * Componente: Navbar (js/components/Navbar.js)

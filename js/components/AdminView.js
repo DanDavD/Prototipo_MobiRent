@@ -1,3 +1,4 @@
+// File: js/components/AdminView.js
 /**
  * ==============================================================
  * Componente: AdminView (js/components/AdminView.js)

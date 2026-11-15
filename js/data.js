@@ -1,3 +1,4 @@
+// File: js/data.js
 /**
  * ==============================================================
  * MobiRent - Catálogo y Datos de Referencia (js/data.js)
