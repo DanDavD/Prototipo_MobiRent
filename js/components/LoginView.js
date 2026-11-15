@@ -1,3 +1,4 @@
+// File: js/components/LoginView.js
 /**
  * ==============================================================
  * Componente: LoginView (js/components/LoginView.js)
@@ -116,7 +117,7 @@ window.LoginViewComponent = {
   `,
   setup() {
     const { ref } = Vue;
-    const store = window.MobiRentStore;
+    const store = window.MobiRentStore; // Direct window access
     const showPassword = ref(false);
 
     const handleSubmit = () => {

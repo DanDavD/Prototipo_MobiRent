@@ -1,425 +1,354 @@
-/**
- * ==============================================================
- * MobiRent - Gestor de Estado Central (js/store.js)
- * ==============================================================
- * Manejo reactivo de estado global, filtrado de inventario,
- * cotizador transparente y transiciones operativas.
- */
-
+// File: js/store.js
 const { reactive } = Vue;
 
 const rawData = window.MobiRentData;
 
 const store = reactive({
-  // Autenticación de usuarios
+  // User authentication state
   currentUser: null, // null | { email: 'cliente@gmail.com', name: 'Carlos Mendoza', role: 'client' } | { email: 'admin@gmail.com', name: 'Administrador MobiRent', role: 'admin' }
   loginForm: {
     email: '',
     password: '',
-    error: '',
-    showPassword: false
+    error: ''
   },
 
-  // Navegación de roles y visualización
+  // UI state for role navigation and display
   activeRole: 'renter', // 'renter', 'owner', 'admin'
   showFullAdmin: false,
   toastMessage: '',
 
-  // Parámetros de búsqueda y filtros
+  // Search and filter parameters
   searchQuery: '',
   selectedCity: 'Todas',
   selectedCategory: 'Todos los artículos',
 
-  // Datos reactivos
-  categories: rawData.categories,
-  publishCategories: rawData.publishCategories,
-  imagePresets: rawData.imagePresets,
-  items: [...rawData.initialItems],
-  rentals: [...rawData.initialRentals],
+  // Inventory and item management
+  inventory: rawData.inventory,
+  selectedItem: null, // Item currently selected for viewing/details
+  itemDetailsModalOpen: false,
 
-  // Control de ventanas modulares
-  selectedItem: null,
-  showCheckoutModal: false,
-  showMyRentalsModal: false,
-  showPublishModal: false,
-
-  // Pestañas secundarias
-  ownerTab: 'items',
-  adminTab: 'logistics',
-
-  // Configuración de cotización
-  bookingDurationType: 'dia', // 'dia', 'semana', 'mes'
-  bookingQuantity: 2,
-  defaultTransportFee: 250,
-  defaultServiceFee: 150,
-
-  // Datos de entrega y pago
-  checkoutForm: {
-    address: 'Colonia Los Castaños, 4ta calle, casa 12',
-    phone: '+504 9988-7766',
-    paymentMethod: 'card'
+  // Rental process state
+  rentalQuote: {
+    startDate: null,
+    endDate: null,
+    totalDays: 0,
+    dailyRate: 0,
+    subtotal: 0,
+    deposit: 0,
+    total: 0,
+    item: null
   },
+  rentalConfirmationModalOpen: false,
+  paymentProcessing: false,
+  paymentSuccess: false,
 
-  // Formulario para nuevo artículo
-  newItem: {
-    title: '',
-    category: 'Mobiliario de hogar',
-    city: 'San Pedro Sula',
-    condition: 'Como nuevo',
-    deposit: 600,
-    priceDay: 90,
-    priceWeek: 400,
-    priceMonth: 1200,
-    image: rawData.imagePresets[0].url,
-    description: 'Artículo en óptimo estado de conservación, verificado y listo para entrega mediante el servicio logístico de MobiRent.'
-  },
-
-  // ==============================================================
-  // PROPIEDADES CALCULADAS
-  // ==============================================================
-
-  get filteredItems() {
-    return this.items.filter(item => {
-      const matchesCategory = this.selectedCategory === 'Todos los artículos' || item.category === this.selectedCategory;
-      const matchesCity = this.selectedCity === 'Todas' || item.city === this.selectedCity;
-      const query = this.searchQuery.toLowerCase().trim();
-      const matchesSearch = !query || 
-                            item.title.toLowerCase().includes(query) || 
-                            item.description.toLowerCase().includes(query) ||
-                            (item.neighborhood && item.neighborhood.toLowerCase().includes(query));
-      return matchesCategory && matchesCity && matchesSearch;
-    });
-  },
-
-  get ownerArticles() {
-    return this.items.filter(item => item.ownerName === 'Gabriela Flores');
-  },
-
-  get ownerRentals() {
-    return this.rentals.filter(r => r.ownerName === 'Gabriela Flores');
-  },
-
-  get ownerStats() {
-    const totalEarnings = this.ownerRentals.reduce((sum, r) => sum + r.ownerPayout, 0);
-    const activeRentals = this.ownerRentals.filter(r => r.status !== 'Devuelto').length;
-    return { totalEarnings, activeRentals };
-  },
-
-  get adminMetrics() {
-    const totalRevenue = this.rentals.reduce((sum, r) => sum + r.serviceFee + (r.transportFee * 0.3), 0);
-    const escrowDeposits = this.rentals.reduce((sum, r) => sum + r.deposit, 0);
-    return {
-      totalRevenue: Math.round(totalRevenue),
-      escrowDeposits
-    };
-  },
-
-  get pendingDeliveriesCount() {
-    return this.rentals.filter(r => ['Asignado', 'En recogida', 'En tránsito'].includes(r.status)).length;
-  },
-
-  get pendingRequestsCount() {
-    return this.rentals.filter(r => r.status === 'Pendiente de aprobación').length;
-  },
-
-  get myRentalsCount() {
-    return this.rentals.length;
-  },
-
-  get bookingDurationTypeLabel() {
-    if (this.bookingDurationType === 'dia') return this.bookingQuantity === 1 ? 'día' : 'días';
-    if (this.bookingDurationType === 'semana') return this.bookingQuantity === 1 ? 'semana' : 'semanas';
-    return this.bookingQuantity === 1 ? 'mes' : 'meses';
-  },
-
-  get calculateRentalSubtotal() {
-    if (!this.selectedItem) return 0;
-    let unitPrice = this.selectedItem.priceDay;
-    if (this.bookingDurationType === 'semana') unitPrice = this.selectedItem.priceWeek;
-    if (this.bookingDurationType === 'mes') unitPrice = this.selectedItem.priceMonth;
-    return unitPrice * this.bookingQuantity;
-  },
-
-  get calculateRentalTotal() {
-    if (!this.selectedItem) return 0;
-    return this.calculateRentalSubtotal + this.defaultTransportFee + this.defaultServiceFee + this.selectedItem.deposit;
-  },
-
-  // ==============================================================
-  // ACCIONES Y MÉTODOS OPERATIVOS
-  // ==============================================================
-
-  showToast(msg) {
-    this.toastMessage = msg;
-    setTimeout(() => {
-      this.toastMessage = '';
-    }, 3200);
-  },
-
-  toggleDeviceMode() {
-    this.isMobileView = !this.isMobileView;
-  },
-
-  openItemDetail(item) {
-    this.selectedItem = item;
-    this.bookingQuantity = 2;
-    this.bookingDurationType = 'dia';
-  },
-
-  startCheckout() {
-    this.showCheckoutModal = true;
-  },
-
-  decreaseQuantity() {
-    if (this.bookingQuantity > 1) {
-      this.bookingQuantity--;
+  // Admin specific state
+  adminPanel: {
+    activeTab: 'dashboard', // 'dashboard', 'inventory', 'users', 'rentals'
+    editingItem: null,
+    editingUser: null,
+    editingRental: null,
+    itemForm: {
+      id: null,
+      name: '',
+      description: '',
+      category: '',
+      city: '',
+      dailyRate: 0,
+      deposit: 0,
+      imageUrl: '',
+      availability: true
+    },
+    userForm: {
+      id: null,
+      name: '',
+      email: '',
+      role: 'client'
+    },
+    rentalForm: {
+      id: null,
+      itemId: null,
+      renterId: null,
+      ownerId: null,
+      startDate: '',
+      endDate: '',
+      status: 'pending'
     }
   },
 
-  increaseQuantity() {
-    this.bookingQuantity++;
-  },
-
-  confirmBooking() {
-    const newRental = {
-      id: Math.floor(100 + Math.random() * 900),
-      itemId: this.selectedItem.id,
-      itemTitle: this.selectedItem.title,
-      renterName: 'Daniel Hernández',
-      renterPhone: this.checkoutForm.phone,
-      ownerName: this.selectedItem.ownerName,
-      duration: `${this.bookingQuantity} ${this.bookingDurationTypeLabel}`,
-      durationType: this.bookingDurationTypeLabel,
-      rentalFee: this.calculateRentalSubtotal,
-      transportFee: this.defaultTransportFee,
-      serviceFee: this.defaultServiceFee,
-      deposit: this.selectedItem.deposit,
-      totalPaid: this.calculateRentalTotal,
-      ownerPayout: this.calculateRentalSubtotal,
-      status: 'En recogida',
-      pickupAddress: 'Colonia Trejo, San Pedro Sula',
-      deliveryAddress: this.checkoutForm.address
-    };
-
-    this.rentals.unshift(newRental);
-    this.showCheckoutModal = false;
-    this.selectedItem = null;
-    this.showToast('Reserva confirmada. La recogida ha sido programada con el transportista.');
-    this.showMyRentalsModal = true;
-  },
-
-  publishItem() {
-    if (!this.newItem.title.trim()) {
-      alert('Por favor ingrese un título descriptivo para el artículo.');
-      return;
+  // Modals control
+  modals: {
+    itemDetails: {
+      isOpen: false,
+      item: null
+    },
+    rentalConfirmation: {
+      isOpen: false,
+      quote: null
+    },
+    adminItemEdit: {
+      isOpen: false,
+      item: null
+    },
+    adminUserEdit: {
+      isOpen: false,
+      user: null
+    },
+    adminRentalEdit: {
+      isOpen: false,
+      rental: null
     }
-
-    const createdItem = {
-      id: Date.now(),
-      title: this.newItem.title.trim(),
-      category: this.newItem.category,
-      condition: this.newItem.condition,
-      city: this.newItem.city,
-      neighborhood: this.newItem.city === 'San Pedro Sula' ? 'Colonia Moderna' : 'Lomas del Guijarro',
-      priceDay: Number(this.newItem.priceDay) || 100,
-      priceWeek: Number(this.newItem.priceWeek) || 450,
-      priceMonth: Number(this.newItem.priceMonth) || 1300,
-      deposit: Number(this.newItem.deposit) || 500,
-      ownerName: 'Gabriela Flores',
-      rating: 5.0,
-      reviewsCount: 1,
-      image: this.newItem.image,
-      description: this.newItem.description.trim(),
-      status: 'activo'
-    };
-
-    this.items.unshift(createdItem);
-    this.showPublishModal = false;
-    this.showToast('Artículo publicado exitosamente en el catálogo de MobiRent.');
-    this.newItem.title = '';
-  },
-
-  toggleItemStatus(item) {
-    item.status = item.status === 'activo' ? 'pausado' : 'activo';
-    this.showToast(`El artículo ahora está ${item.status}.`);
-  },
-
-  deleteItem(itemId) {
-    if (confirm('¿Desea retirar esta publicación del catálogo?')) {
-      this.items = this.items.filter(i => i.id !== itemId);
-      this.showToast('Publicación retirada.');
-    }
-  },
-
-  setRentalStatus(rentalId, newStatus) {
-    const rental = this.rentals.find(r => r.id === rentalId);
-    if (rental) {
-      rental.status = newStatus;
-      this.showToast(`Orden #${rentalId}: Estado cambiado a "${newStatus}".`);
-    }
-  },
-
-  getStageIndex(status) {
-    const map = {
-      'Asignado': 0,
-      'En recogida': 0,
-      'Pendiente de aprobación': 0,
-      'En tránsito': 1,
-      'Entregado': 2,
-      'Devuelto': 3
-    };
-    return map[status] !== undefined ? map[status] : 0;
-  },
-
-  advanceRentalStatus(rentalId) {
-    const rental = this.rentals.find(r => r.id === rentalId);
-    if (!rental) return;
-
-    const currentIndex = this.getStageIndex(rental.status);
-    const flow = ['En tránsito', 'Entregado', 'Devuelto'];
-
-    if (currentIndex < 3) {
-      const nextStatus = flow[currentIndex];
-      rental.status = nextStatus;
-      this.showToast(`Orden #${rentalId}: Avanzado a "${nextStatus}".`);
-    }
-  },
-
-  getNextActionTitle(status) {
-    switch(status) {
-      case 'Asignado':
-      case 'En recogida':
-      case 'Pendiente de aprobación':
-        return 'Poner en ruta de entrega →';
-      case 'En tránsito':
-        return 'Confirmar entrega al cliente ✓';
-      case 'Entregado':
-        return 'Registrar devolución y retorno →';
-      case 'Devuelto':
-        return 'Servicio finalizado';
-      default:
-        return 'Avanzar estado';
-    }
-  },
-
-  approveRentalByOwner(rentalId) {
-    this.setRentalStatus(rentalId, 'Asignado');
-  },
-
-  rejectRentalByOwner(rentalId) {
-    this.rentals = this.rentals.filter(r => r.id !== rentalId);
-    this.showToast('Solicitud declinada.');
-  },
-
-  requestPayout() {
-    this.showToast('Solicitud de liquidación procesada para depósito bancario.');
-  },
-
-  getRentalBadgeClass(status) {
-    switch(status) {
-      case 'Asignado': return 'bg-surface-subtle text-charcoal border border-surface-border';
-      case 'En tránsito': return 'bg-amber-50 text-amber-800 border border-amber-200';
-      case 'Entregado': return 'bg-forest text-white';
-      case 'Devuelto': return 'bg-neutral-100 text-charcoal-muted border border-surface-border';
-      default: return 'bg-surface-subtle text-charcoal';
-    }
-  },
-
-  getAdminBadgeClass(status) {
-    switch(status) {
-      case 'Asignado': return 'bg-surface-subtle text-charcoal border border-surface-border';
-      case 'En tránsito': return 'bg-amber-50 text-amber-800 border border-amber-200';
-      case 'Entregado': return 'bg-forest text-white';
-      case 'Devuelto': return 'bg-neutral-100 text-charcoal-muted border border-surface-border';
-      default: return 'bg-surface-subtle text-charcoal';
-    }
-  },
-
-  resetData() {
-    if (confirm('¿Restablecer los datos de demostración del sistema?')) {
-      localStorage.removeItem('mobirent_auth_user');
-      location.reload();
-    }
-  },
-
-  // ==============================================================
-  // MÉTODOS DE AUTENTICACIÓN
-  // ==============================================================
-
-  login(email, password) {
-    const cleanEmail = (email || '').trim().toLowerCase();
-    const cleanPassword = (password || '').trim();
-
-    if (cleanEmail === 'cliente@gmail.com' && cleanPassword === 'contra123') {
-      this.currentUser = {
-        email: 'cliente@gmail.com',
-        name: 'Carlos Mendoza',
-        role: 'client'
-      };
-      this.activeRole = 'renter';
-      this.showFullAdmin = false;
-      this.loginForm.error = '';
-      try {
-        localStorage.setItem('mobirent_auth_user', JSON.stringify(this.currentUser));
-      } catch (e) {}
-      this.showToast('Bienvenido, Carlos. Sesión iniciada.');
-      return true;
-    }
-
-    if (cleanEmail === 'admin@gmail.com' && cleanPassword === 'contra123') {
-      this.currentUser = {
-        email: 'admin@gmail.com',
-        name: 'Administración MobiRent',
-        role: 'admin'
-      };
-      this.activeRole = 'admin';
-      this.showFullAdmin = true;
-      this.loginForm.error = '';
-      try {
-        localStorage.setItem('mobirent_auth_user', JSON.stringify(this.currentUser));
-      } catch (e) {}
-      this.showToast('Acceso concedido al Centro de Operaciones.');
-      return true;
-    }
-
-    this.loginForm.error = 'Correo electrónico o contraseña incorrectos.';
-    return false;
-  },
-
-  fillAndLogin(email, password) {
-    this.loginForm.email = email;
-    this.loginForm.password = password;
-    return this.login(email, password);
-  },
-
-  logout() {
-    this.currentUser = null;
-    this.activeRole = 'renter';
-    this.showFullAdmin = false;
-    this.showCheckoutModal = false;
-    this.showMyRentalsModal = false;
-    this.showPublishModal = false;
-    this.loginForm.email = '';
-    this.loginForm.password = '';
-    this.loginForm.error = '';
-    try {
-      localStorage.removeItem('mobirent_auth_user');
-    } catch (e) {}
-    this.showToast('Sesión cerrada.');
   }
 });
 
-// Restauración de sesión persistente si existe
-try {
-  const savedUser = localStorage.getItem('mobirent_auth_user');
-  if (savedUser) {
-    const parsed = JSON.parse(savedUser);
-    if (parsed && (parsed.email === 'cliente@gmail.com' || parsed.email === 'admin@gmail.com')) {
-      store.currentUser = parsed;
-      store.activeRole = parsed.role === 'admin' ? 'admin' : 'renter';
-      store.showFullAdmin = (parsed.role === 'admin');
-    }
-  }
-} catch (e) {}
+// --- Getters (Computed Properties) ---
+Object.defineProperty(store, 'filteredInventory', {
+  get() {
+    let filtered = store.inventory;
 
+    if (store.searchQuery) {
+      const query = store.searchQuery.toLowerCase();
+      filtered = filtered.filter(item =>
+        item.name.toLowerCase().includes(query) ||
+        item.description.toLowerCase().includes(query) ||
+        item.city.toLowerCase().includes(query) ||
+        item.category.toLowerCase().includes(query)
+      );
+    }
+
+    if (store.selectedCity !== 'Todas') {
+      filtered = filtered.filter(item => item.city === store.selectedCity);
+    }
+
+    if (store.selectedCategory !== 'Todos los artículos') {
+      filtered = filtered.filter(item => item.category === store.selectedCategory);
+    }
+
+    return filtered;
+  }
+});
+
+Object.defineProperty(store, 'availableCities', {
+  get() {
+    const cities = new Set(store.inventory.map(item => item.city));
+    return ['Todas', ...Array.from(cities).sort()];
+  }
+});
+
+Object.defineProperty(store, 'availableCategories', {
+  get() {
+    const categories = new Set(store.inventory.map(item => item.category));
+    return ['Todos los artículos', ...Array.from(categories).sort()];
+  }
+});
+
+Object.defineProperty(store, 'isAuthenticated', {
+  get() {
+    return store.currentUser !== null;
+  }
+});
+
+Object.defineProperty(store, 'isAdmin', {
+  get() {
+    return store.currentUser && store.currentUser.role === 'admin';
+  }
+});
+
+Object.defineProperty(store, 'isOwner', {
+  get() {
+    return store.currentUser && store.currentUser.role === 'owner';
+  }
+});
+
+Object.defineProperty(store, 'isRenter', {
+  get() {
+    return store.currentUser && store.currentUser.role === 'client';
+  }
+});
+
+// --- Actions (Methods) ---
+store.login = (email, password) => {
+  store.loginForm.error = ''; // Clear previous errors
+
+  // Simulate API call
+  setTimeout(() => {
+    if (email === 'cliente@gmail.com' && password === 'contra123') {
+      store.currentUser = { email: 'cliente@gmail.com', name: 'Carlos Mendoza', role: 'client' };
+      store.activeRole = 'renter';
+      store.toastMessage = '¡Bienvenido, Carlos Mendoza!';
+    } else if (email === 'admin@gmail.com' && password === 'contra123') {
+      store.currentUser = { email: 'admin@gmail.com', name: 'Administrador MobiRent', role: 'admin' };
+      store.activeRole = 'admin';
+      store.toastMessage = '¡Bienvenido, Administrador!';
+    } else if (email === 'propietario@gmail.com' && password === 'contra123') {
+      store.currentUser = { email: 'propietario@gmail.com', name: 'Ana García', role: 'owner' };
+      store.activeRole = 'owner';
+      store.toastMessage = '¡Bienvenido, Ana García!';
+    } else {
+      store.loginForm.error = 'Credenciales incorrectas. Intente de nuevo.';
+      store.toastMessage = 'Error de inicio de sesión.';
+    }
+    // Clear toast message after a delay
+    setTimeout(() => store.toastMessage = '', 3000);
+  }, 500);
+};
+
+store.logout = () => {
+  store.currentUser = null;
+  store.activeRole = 'renter'; // Default to renter view after logout
+  store.loginForm.email = '';
+  store.loginForm.password = '';
+  store.loginForm.error = '';
+  store.toastMessage = 'Sesión cerrada exitosamente.';
+  setTimeout(() => store.toastMessage = '', 3000);
+};
+
+store.setActiveRole = (role) => {
+  if (store.currentUser && (role === 'renter' || store.currentUser.role === role)) {
+    store.activeRole = role;
+  } else if (!store.currentUser && role === 'renter') {
+    store.activeRole = role; // Allow unauthenticated users to view renter page
+  }
+};
+
+store.showItemDetails = (item) => {
+  store.modals.itemDetails.item = item;
+  store.modals.itemDetails.isOpen = true;
+};
+
+store.hideItemDetails = () => {
+  store.modals.itemDetails.isOpen = false;
+  store.modals.itemDetails.item = null;
+};
+
+store.calculateRentalQuote = (item, startDate, endDate) => {
+  if (!item || !startDate || !endDate) {
+    store.rentalQuote = {
+      startDate: null, endDate: null, totalDays: 0, dailyRate: 0, subtotal: 0, deposit: 0, total: 0, item: null
+    };
+    return;
+  }
+
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  const timeDiff = end.getTime() - start.getTime();
+  const totalDays = Math.ceil(timeDiff / (1000 * 3600 * 24));
+
+  if (totalDays <= 0) {
+    store.rentalQuote = {
+      startDate: null, endDate: null, totalDays: 0, dailyRate: 0, subtotal: 0, deposit: 0, total: 0, item: null
+    };
+    return;
+  }
+
+  const dailyRate = item.dailyRate;
+  const subtotal = dailyRate * totalDays;
+  const deposit = item.deposit;
+  const total = subtotal + deposit;
+
+  store.rentalQuote = {
+    startDate,
+    endDate,
+    totalDays,
+    dailyRate,
+    subtotal,
+    deposit,
+    total,
+    item
+  };
+};
+
+store.confirmRental = () => {
+  if (!store.rentalQuote.item || !store.currentUser) {
+    store.toastMessage = 'Error: No hay una cotización o usuario para confirmar.';
+    setTimeout(() => store.toastMessage = '', 3000);
+    return;
+  }
+
+  store.modals.rentalConfirmation.quote = store.rentalQuote;
+  store.modals.rentalConfirmation.isOpen = true;
+};
+
+store.processPayment = () => {
+  store.paymentProcessing = true;
+  store.toastMessage = 'Procesando pago...';
+
+  setTimeout(() => {
+    // Simulate payment success/failure
+    const success = Math.random() > 0.1; // 90% success rate
+
+    if (success) {
+      store.paymentSuccess = true;
+      store.toastMessage = '¡Pago exitoso! Su alquiler ha sido confirmado.';
+      // Here you would typically add the rental to a list of active rentals
+      // and update item availability.
+    } else {
+      store.paymentSuccess = false;
+      store.toastMessage = 'Error en el pago. Por favor, intente de nuevo.';
+    }
+
+    store.paymentProcessing = false;
+    setTimeout(() => {
+      store.toastMessage = '';
+      store.modals.rentalConfirmation.isOpen = false;
+      store.paymentSuccess = false; // Reset for next transaction
+      store.rentalQuote = { // Clear quote after transaction
+        startDate: null, endDate: null, totalDays: 0, dailyRate: 0, subtotal: 0, deposit: 0, total: 0, item: null
+      };
+    }, 3000);
+
+  }, 2000);
+};
+
+// Admin Actions
+store.openAdminItemEdit = (item = null) => {
+  store.adminPanel.editingItem = item;
+  if (item) {
+    Object.assign(store.adminPanel.itemForm, item);
+  } else {
+    // Reset form for new item
+    store.adminPanel.itemForm = {
+      id: null, name: '', description: '', category: '', city: '', dailyRate: 0, deposit: 0, imageUrl: '', availability: true
+    };
+  }
+  store.modals.adminItemEdit.isOpen = true;
+};
+
+store.closeAdminItemEdit = () => {
+  store.modals.adminItemEdit.isOpen = false;
+  store.adminPanel.editingItem = null;
+  // Clear form
+  store.adminPanel.itemForm = {
+    id: null, name: '', description: '', category: '', city: '', dailyRate: 0, deposit: 0, imageUrl: '', availability: true
+  };
+};
+
+store.saveAdminItem = () => {
+  const form = store.adminPanel.itemForm;
+  if (form.id) {
+    // Update existing item
+    const index = store.inventory.findIndex(item => item.id === form.id);
+    if (index !== -1) {
+      store.inventory[index] = { ...store.inventory[index], ...form };
+      store.toastMessage = 'Artículo actualizado exitosamente.';
+    }
+  } else {
+    // Add new item
+    form.id = store.inventory.length > 0 ? Math.max(...store.inventory.map(i => i.id)) + 1 : 1;
+    store.inventory.push({ ...form });
+    store.toastMessage = 'Artículo añadido exitosamente.';
+  }
+  store.closeAdminItemEdit();
+  setTimeout(() => store.toastMessage = '', 3000);
+};
+
+store.deleteAdminItem = (itemId) => {
+  if (confirm('¿Está seguro de que desea eliminar este artículo?')) {
+    store.inventory = store.inventory.filter(item => item.id !== itemId);
+    store.toastMessage = 'Artículo eliminado exitosamente.';
+    setTimeout(() => store.toastMessage = '', 3000);
+  }
+};
+
+// Expose the store globally
 window.MobiRentStore = store;
