@@ -48,6 +48,19 @@ window.NavbarComponent = {
           <!-- Acciones de Usuario Cliente -->
           <div class="flex items-center space-x-2 shrink-0">
             
+            <!-- Botón Mis Alquileres (Desktop / Tablet) -->
+            <button 
+              @click="store.showMyRentalsModal = true"
+              class="hidden sm:inline-flex items-center space-x-1.5 text-xs font-semibold text-charcoal hover:bg-surface-subtle px-3 py-1.5 rounded-full border border-surface-border transition-colors">
+              <svg class="w-3.5 h-3.5 text-forest" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+              </svg>
+              <span>Mis Alquileres</span>
+              <span v-if="store.myRentalsCount > 0" class="ml-0.5 px-1.5 py-0.2 bg-forest text-white rounded-full text-[10px] font-bold">
+                {{ store.myRentalsCount }}
+              </span>
+            </button>
+
             <!-- Botón Publicar Artículo -->
             <button 
               @click="store.showPublishModal = true"
