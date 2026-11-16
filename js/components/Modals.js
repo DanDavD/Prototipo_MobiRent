@@ -18,7 +18,7 @@ window.ModalsComponent = {
       <!-- MODAL 1: DETALLE DEL ARTÍCULO Y COTIZADOR EN VIVO              -->
       <!-- ============================================================== -->
       <div 
-        v-if="store.selectedItem" 
+        v-if="store.selectedItem && !store.showCheckoutModal" 
         class="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/50 backdrop-blur-xs overflow-y-auto">
         
         <div class="bg-white rounded-t-[28px] sm:rounded-3xl max-w-xl w-full max-h-[92vh] sm:max-h-[90vh] overflow-y-auto shadow-airbnb-modal border border-surface-border flex flex-col">
@@ -147,7 +147,7 @@ window.ModalsComponent = {
             <!-- Botón de Continuar -->
             <button 
               @click="store.startCheckout()"
-              class="mt-5 w-full bg-forest hover:bg-forest-hover text-white font-bold py-3.5 rounded-full shadow-md transition-all duration-150 flex items-center justify-center space-x-2">
+              class="mt-5 w-full bg-forest hover:bg-forest-hover active:scale-[0.98] text-white font-bold py-3.5 rounded-full shadow-md transition-all duration-150 flex items-center justify-center space-x-2 cursor-pointer">
               <span>Continuar con la reserva</span>
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
@@ -164,17 +164,30 @@ window.ModalsComponent = {
       <!-- MODAL 2: CHECKOUT Y DATOS DE ENTREGA                           -->
       <!-- ============================================================== -->
       <div 
-        v-if="store.showCheckoutModal" 
+        v-if="store.showCheckoutModal && store.selectedItem" 
         class="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/50 backdrop-blur-xs overflow-y-auto">
         
         <div class="bg-white rounded-t-[28px] sm:rounded-3xl max-w-md w-full max-h-[92vh] sm:max-h-[85vh] overflow-y-auto shadow-airbnb-modal border border-surface-border flex flex-col">
           
           <div class="px-5 py-4 border-b border-surface-border flex items-center justify-between">
-            <div>
-              <h3 class="font-bold text-sm text-charcoal">Confirmar Alquiler</h3>
-              <p class="text-xs text-charcoal-muted">Logística gestionada y garantía en custodia</p>
+            <div class="flex items-center space-x-2">
+              <button 
+                @click="store.showCheckoutModal = false" 
+                class="p-1 -ml-1 rounded-full text-charcoal hover:bg-surface-subtle transition-colors"
+                title="Volver a cotización">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                </svg>
+              </button>
+              <div>
+                <h3 class="font-bold text-sm text-charcoal">Confirmar Alquiler</h3>
+                <p class="text-xs text-charcoal-muted">Logística gestionada y garantía en custodia</p>
+              </div>
             </div>
-            <button @click="store.showCheckoutModal = false" class="p-1 rounded-full text-charcoal-muted hover:text-charcoal">
+            <button 
+              @click="store.showCheckoutModal = false; store.selectedItem = null" 
+              class="p-1 rounded-full text-charcoal-muted hover:text-charcoal"
+              title="Cerrar">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
               </svg>

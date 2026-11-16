@@ -174,6 +174,11 @@ const store = reactive({
     this.showCheckoutModal = true;
   },
 
+  startCheckout() {
+    if (!this.selectedItem) return;
+    this.showCheckoutModal = true;
+  },
+
   closeCheckout() {
     this.showCheckoutModal = false;
   },
@@ -186,6 +191,10 @@ const store = reactive({
     if (this.bookingQuantity > 1) {
       this.bookingQuantity--;
     }
+  },
+
+  confirmBooking() {
+    this.confirmCheckout();
   },
 
   confirmCheckout() {
@@ -214,6 +223,7 @@ const store = reactive({
     this.rentals.unshift(newRental);
     this.closeCheckout();
     this.closeItemDetail();
+    this.showMyRentalsModal = true;
     this.showToast('¡Reserva confirmada con éxito! Inspección y flete en preparación.');
   },
 
