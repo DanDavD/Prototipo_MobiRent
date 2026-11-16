@@ -437,3 +437,4 @@ try {
 
 // Expose store globally
 window.MobiRentStore = store;
+window.store = store;
