@@ -1,66 +1,85 @@
-# MobiRent Honduras - Prototipo Interactivo de Software
+# MobiRent Honduras — Interactive Software Prototype
 
-Plataforma digital para el alquiler temporal de muebles, electrodomésticos y equipamiento comercial y de eventos en Honduras (San Pedro Sula y Tegucigalpa).
+Digital web marketplace prototype for temporary rental of furniture, appliances, and commercial event equipment in Honduras (San Pedro Sula and Tegucigalpa). Built for investor pitching and business model validation.
+
+- **Live Prototype:** [dandavd.github.io/Prototipo_MobiRent](https://dandavd.github.io/Prototipo_MobiRent/)
+- **Author:** Daniel David ([@DanDavD](https://github.com/DanDavD))
+- **Stack:** Vue 3 (Composition API & Reactive Store), Tailwind CSS, Vanilla JavaScript, HTML5
 
 ---
 
-## 🏗️ Arquitectura Modular del Proyecto
+## Architecture & Modular Structure
 
-El código ha sido dividido y estructurado de forma modular y profesional, separando vistas, estado, datos y estilos para facilitar su lectura y mantenimiento:
+The prototype is organized into a modular component-driven architecture separating reactive state management, business rules, mock datasets, and role-based views:
 
 ```text
 Prototipo_MobiRent/
-├── index.html                  # Punto de entrada HTML limpio y semántico (~95 líneas)
+├── index.html                  # Semantic entry point and CDN script orchestrator
 ├── css/
-│   └── styles.css              # Estilos personalizados, scrollbars y simulador smartphone
+│   └── styles.css              # Custom styling, scrollbar behaviors, and design tokens
 ├── js/
-│   ├── data.js                 # Catálogo inicial de muebles, categorías y presets
-│   ├── store.js                # Gestor central de estado reactivo y reglas de negocio (Vue Store)
-│   ├── app.js                  # Inicialización y montaje de la aplicación
+│   ├── data.js                 # Initial catalog items, categories, cities, and presets
+│   ├── store.js                # Centralized reactive state store and business logic
+│   ├── app.js                  # Vue application initialization and component mounting
 │   └── components/
-│       ├── Navbar.js           # Barra superior, switch de roles y simulador móvil
-│       ├── RenterView.js       # Vista del Arrendatario (Catálogo, filtros, búsqueda)
-│       ├── OwnerView.js        # Vista del Arrendador (Panel de dueño, ganancias, inventario)
-│       ├── AdminView.js        # Panel Administrativo (Tablero logístico en vivo, auditoría)
-│       └── Modals.js           # Modales (Cotizador en vivo, checkout, tracking de entrega)
-├── serve.sh                    # Script para iniciar el servidor local rápidamente
-└── README.md                   # Documentación técnica
+│       ├── LoginView.js        # Authentication portal with credential routing
+│       ├── Navbar.js           # Navigation bar with role-specific navigation tabs
+│       ├── RenterView.js       # Renter interface (catalog discovery, filters, search)
+│       ├── OwnerView.js        # Equipment owner dashboard (earnings, inventory management)
+│       ├── AdminView.js        # Operations dashboard (live logistics tracking, financial audit)
+│       └── Modals.js           # Dialogs (real-time quoting engine, checkout, order tracking)
+├── serve.sh                    # Local static server helper script (port 8888)
+└── README.md                   # Technical documentation
 ```
 
 ---
 
-## 🚀 Cómo ejecutar el proyecto
+## Authentication & Demo Access
 
-1. **Directamente en tu navegador:**
-   - Haz doble clic en `index.html` para abrirlo en Chrome, Safari o Edge.
-   
-2. **Con el servidor local (Recomendado para verlo en tu celular):**
-   ```bash
-   ./serve.sh
-   ```
-   - En tu computadora abre: `http://localhost:8888`
-   - En tu celular (misma red Wi-Fi): `http://<TU_IP_LOCAL>:8888`
+The platform implements role-based authentication separating client and administrator access:
+
+| Role | Email | Password | Access Scope |
+| :--- | :--- | :--- | :--- |
+| **Client (Renter & Host)** | `cliente@gmail.com` | `contra123` | Catalog discovery, checkout, pricing calculator, and host earnings dashboard |
+| **Administrator (Operations)** | `admin@gmail.com` | `contra123` | Live dispatch stepper, platform fee auditing, and security deposit management |
 
 ---
 
-## 🎯 Vistas y Funcionalidades Principales
+## Core Capabilities & User Workflows
 
-1. **🛒 Comprador / Arrendatario:**
-   - Exploración de catálogo con filtros de ciudad (*San Pedro Sula / Tegucigalpa*) y categorías (*Hogar, Electrodomésticos, Eventos, Oficina, Catering*).
-   - **Cotizador en tiempo real:** cálculo por día, semana o mes con desglose transparente (Alquiler + Flete MobiRent + Tarifa de Servicio + Depósito reembolsable).
-   - Simulación de pago y dirección de entrega.
-   - Pestaña *"Mis Alquileres"* con barra visual de tracking logístico.
+### 1. Renter Workflow
+- **Catalog & Discovery:** Filter inventory by city (San Pedro Sula / Tegucigalpa) and categories (Living, Appliances, Events, Office, Catering).
+- **Real-Time Quoting Engine:** Calculates dynamic rates per day, week, or month with transparent cost breakdowns:
+  - Base rental subtotal
+  - MobiRent freight logistics
+  - Platform service fee
+  - Refundable security deposit
+- **Checkout & Active Rentals:** Simulated checkout with delivery address selection and a dedicated "My Rentals" tracking modal.
 
-2. **🏷️ Vendedor / Arrendador (Dueño):**
-   - Dashboard con ganancias acumuladas y saldo listo para liquidar a cuenta bancaria.
-   - Publicación de muebles fijando precios por día, semana y mes, y depósito en garantía.
-   - Activación / pausa de artículos e historial de solicitudes.
+### 2. Equipment Owner (Host) Workflow
+- **Earnings Portal:** Real-time visibility into accumulated rental income and pending bank payouts.
+- **Listing Management:** Item publishing with customizable pricing tiers (day/week/month) and security deposit requirements.
+- **Inventory Control:** Status toggling (active/paused) and order request history.
 
-3. **🛡️ Administrador (MobiRent Operations):**
-   - Margen de ganancias de la plataforma y custodia de garantías.
-   - **Tablero logístico interactivo en vivo:** avanza el estado del transporte paso a paso:
-     $$\text{[Asignar Chofer]} \longrightarrow \text{[En Recogida]} \longrightarrow \text{[En Tránsito]} \longrightarrow \text{[Entregada]} \longrightarrow \text{[Devuelta \& Garantía]}$$
-   - Auditoría financiera y moderación de catálogo.
+### 3. Operations & Logistics Admin Workflow
+- **Interactive 5-Stage Logistics Stepper:** Step-by-step dispatch workflow tracking the complete equipment lifecycle:
+  `[Assign Driver] -> [Pickup in Progress] -> [In Transit] -> [Delivered] -> [Returned & Deposit Released]`
+- **Financial Telemetry:** Platform fee margins, active escrow deposits, and catalog moderation.
 
-4. **📱 Simulador de Smartphone:**
-   - Botón en la barra superior que enmarca la interfaz en un teléfono móvil para presentaciones en clase y proyector.
+---
+
+## Running the Project Locally
+
+### Direct in Browser
+Open `index.html` directly in any modern browser (Chrome, Edge, Safari, Firefox).
+
+### Using the Local Server Script
+```bash
+# Make the script executable (if needed)
+chmod +x serve.sh
+
+# Run the local server
+./serve.sh
+```
+- Local machine URL: `http://localhost:8888`
+- Local network URL (for testing on mobile devices on the same Wi-Fi): `http://<YOUR_LOCAL_IP>:8888`
