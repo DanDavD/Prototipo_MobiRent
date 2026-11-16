@@ -36,7 +36,13 @@ const store = reactive({
   publishCategories: rawData.publishCategories,
   imagePresets: rawData.imagePresets,
   items: [...rawData.initialItems],
-  rentals: [...rawData.initialRentals],
+  rentals: (() => {
+    try {
+      const saved = localStorage.getItem('mobirent_rentals');
+      if (saved) return JSON.parse(saved);
+    } catch (e) {}
+    return [...rawData.initialRentals];
+  })(),
 
   // Control de ventanas modulares
   selectedItem: null,
@@ -221,10 +227,17 @@ const store = reactive({
     };
 
     this.rentals.unshift(newRental);
+    this.persistRentals();
     this.closeCheckout();
     this.closeItemDetail();
     this.showMyRentalsModal = true;
     this.showToast('¡Reserva confirmada con éxito! Inspección y flete en preparación.');
+  },
+
+  persistRentals() {
+    try {
+      localStorage.setItem('mobirent_rentals', JSON.stringify(this.rentals));
+    } catch (e) {}
   },
 
   publishItem() {
@@ -274,6 +287,7 @@ const store = reactive({
     const rental = this.rentals.find(r => r.id === rentalId);
     if (rental) {
       rental.status = newStatus;
+      this.persistRentals();
       this.showToast(`Orden #${rentalId}: Estado cambiado a "${newStatus}".`);
     }
   },
@@ -300,6 +314,7 @@ const store = reactive({
     if (currentIndex < 3) {
       const nextStatus = flow[currentIndex];
       rental.status = nextStatus;
+      this.persistRentals();
       this.showToast(`Orden #${rentalId}: Avanzado a "${nextStatus}".`);
     }
   },
@@ -357,6 +372,7 @@ const store = reactive({
   resetData() {
     if (confirm('¿Restablecer los datos de demostración del sistema?')) {
       localStorage.removeItem('mobirent_auth_user');
+      localStorage.removeItem('mobirent_rentals');
       location.reload();
     }
   },
@@ -438,3 +454,17 @@ try {
 // Expose store globally
 window.MobiRentStore = store;
 window.store = store;
+
+// Sincronización en tiempo real entre pestañas en el mismo navegador
+if (typeof window !== 'undefined' && window.addEventListener) {
+  window.addEventListener('storage', (e) => {
+    if (e.key === 'mobirent_rentals' && e.newValue) {
+      try {
+        const updated = JSON.parse(e.newValue);
+        if (Array.isArray(updated)) {
+          store.rentals = updated;
+        }
+      } catch (err) {}
+    }
+  });
+}
