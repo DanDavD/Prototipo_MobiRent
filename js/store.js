@@ -706,7 +706,8 @@ const store = reactive({
     this.showMyRentalsModal = false;
     this.showPublishModal = false;
     this.searchQuery = '';
-    this.selectedCity = 'Todas';
+    // La ciudad de la cuenta es el filtro inicial del catálogo (se puede cambiar a "Todas")
+    this.selectedCity = ['San Pedro Sula', 'Tegucigalpa'].includes(user.city) ? user.city : 'Todas';
     this.selectedCategory = 'Todos los artículos';
     this.ownerTab = 'items';
     this.adminTab = 'logistics';
