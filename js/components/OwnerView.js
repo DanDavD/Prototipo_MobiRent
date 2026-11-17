@@ -44,13 +44,13 @@ window.OwnerViewComponent = {
           <div class="p-3.5 sm:p-4 rounded-2xl border border-surface-border bg-white shadow-airbnb">
             <span class="text-[10px] font-bold text-charcoal-muted uppercase tracking-wider block">Saldo acumulado</span>
             <div class="text-xl sm:text-2xl font-bold text-forest mt-1">L {{ store.ownerStats.totalEarnings }}</div>
-            <span class="text-[10px] text-charcoal-muted block mt-0.5">Listo para retiro</span>
+            <span class="text-[10px] text-charcoal-muted block mt-0.5">Listo para retiro · L {{ store.ownerStats.pendingEarnings }} por liberar</span>
           </div>
 
           <div class="p-3.5 sm:p-4 rounded-2xl border border-surface-border bg-white shadow-airbnb">
             <span class="text-[10px] font-bold text-charcoal-muted uppercase tracking-wider block">Artículos activos</span>
             <div class="text-xl sm:text-2xl font-bold text-charcoal mt-1">{{ store.ownerArticles.length }}</div>
-            <span class="text-[10px] text-charcoal-muted block mt-0.5">En catálogo</span>
+            <span class="text-[10px] text-charcoal-muted block mt-0.5">Publicados</span>
           </div>
 
           <div class="p-3.5 sm:p-4 rounded-2xl border border-surface-border bg-white shadow-airbnb">
@@ -88,7 +88,7 @@ window.OwnerViewComponent = {
             @click="store.ownerTab = 'requests'" 
             :class="store.ownerTab === 'requests' ? 'border-forest text-forest font-bold' : 'border-transparent text-charcoal-muted hover:text-charcoal font-medium'"
             class="pb-3 border-b-2 text-xs whitespace-nowrap transition-colors flex items-center space-x-1.5">
-            <span>Solicitudes</span>
+            <span>Pedidos</span>
             <span v-if="store.pendingRequestsCount > 0" class="w-4 h-4 bg-forest text-white rounded-full text-[10px] flex items-center justify-center font-bold">
               {{ store.pendingRequestsCount }}
             </span>
@@ -168,8 +168,13 @@ window.OwnerViewComponent = {
 
         </div>
 
-        <!-- TAB 2: Solicitudes de Alquiler -->
+        <!-- TAB 2: Pedidos de Alquiler de mis artículos -->
         <div v-if="store.ownerTab === 'requests'" class="space-y-4">
+
+          <div v-if="store.ownerRentals.length === 0" class="text-center py-12 border border-dashed border-surface-border rounded-2xl">
+            <p class="text-xs font-semibold text-charcoal">Aún no tienes pedidos</p>
+            <p class="text-[11px] text-charcoal-muted mt-1">Cuando alguien alquile uno de tus artículos aparecerá aquí.</p>
+          </div>
           
           <div 
             v-for="rental in store.ownerRentals" 
@@ -198,19 +203,6 @@ window.OwnerViewComponent = {
               Recogida programada: <strong class="text-charcoal">{{ rental.pickupAddress }}</strong>
             </div>
 
-            <div v-if="rental.status === 'Pendiente de aprobación'" class="flex space-x-2 pt-1">
-              <button 
-                @click="store.approveRentalByOwner(rental.id)"
-                class="flex-1 bg-forest hover:bg-forest-hover text-white text-xs font-bold py-2.5 rounded-xl transition-colors">
-                Aceptar solicitud
-              </button>
-              <button 
-                @click="store.rejectRentalByOwner(rental.id)"
-                class="flex-1 border border-surface-border text-charcoal hover:bg-surface-subtle text-xs font-bold py-2.5 rounded-xl transition-colors">
-                Declinar
-              </button>
-            </div>
-
           </div>
 
         </div>
@@ -234,20 +226,16 @@ window.OwnerViewComponent = {
           </div>
 
           <h4 class="font-bold text-xs text-charcoal mt-6 mb-3 uppercase tracking-wider">Historial de depósitos</h4>
-          <div class="divide-y divide-surface-border border border-surface-border rounded-xl overflow-hidden text-xs">
-            <div class="p-3.5 flex justify-between items-center bg-white">
+          <div v-if="store.ownerPayouts.length === 0" class="p-4 text-xs text-charcoal-muted border border-surface-border rounded-xl">
+            Todavía no has solicitado transferencias.
+          </div>
+          <div v-else class="divide-y divide-surface-border border border-surface-border rounded-xl overflow-hidden text-xs">
+            <div v-for="p in store.ownerPayouts" :key="p.id" class="p-3.5 flex justify-between items-center bg-white">
               <div>
-                <p class="font-semibold text-charcoal">Sala seccional gris (1 mes)</p>
-                <p class="text-[11px] text-charcoal-muted mt-0.5">BAC-98214 · Transferido</p>
+                <p class="font-semibold text-charcoal">{{ p.concept }}</p>
+                <p class="text-[11px] text-charcoal-muted mt-0.5">{{ p.ref }} · Transferido<span v-if="p.date"> · {{ store.formatDate(p.date) }}</span></p>
               </div>
-              <span class="font-bold text-forest">L 1,800.00</span>
-            </div>
-            <div class="p-3.5 flex justify-between items-center bg-white">
-              <div>
-                <p class="font-semibold text-charcoal">Sillas Tiffany (Evento fin de semana)</p>
-                <p class="text-[11px] text-charcoal-muted mt-0.5">BAC-96301 · Transferido</p>
-              </div>
-              <span class="font-bold text-forest">L 1,650.00</span>
+              <span class="font-bold text-forest">L {{ p.amount }}</span>
             </div>
           </div>
 

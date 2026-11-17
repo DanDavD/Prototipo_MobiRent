@@ -240,9 +240,9 @@ window.AdminViewComponent = {
                   :value="rental.status" 
                   @change="store.setRentalStatus(rental.id, $event.target.value)"
                   class="text-xs font-semibold text-charcoal bg-white border border-surface-border rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-forest cursor-pointer shadow-sm">
-                  <option value="Asignado">1. Asignado</option>
-                  <option value="En tránsito">2. En tránsito</option>
-                  <option value="Entregado">3. Entregado</option>
+                  <option value="Asignado" :disabled="store.getStageIndex(rental.status) > 0">1. Asignado</option>
+                  <option value="En tránsito" :disabled="store.getStageIndex(rental.status) > 1">2. En tránsito</option>
+                  <option value="Entregado" :disabled="store.getStageIndex(rental.status) > 2">3. Entregado</option>
                   <option value="Devuelto">4. Devuelto</option>
                 </select>
               </div>
@@ -279,7 +279,7 @@ window.AdminViewComponent = {
                 <div class="flex justify-between">
                   <span class="text-charcoal-muted">Plan de pago:</span>
                   <span class="text-charcoal font-semibold">
-                    {{ (r.paymentPlan && r.paymentPlan > 1) ? (r.paymentPlan + ' cuotas (L ' + r.installmentAmount + ')') : 'Contado (1 cuota)' }}
+                    {{ (r.paymentPlan && r.paymentPlan > 1) ? (r.installments.filter(i => i.status === 'Pagada').length + '/' + r.paymentPlan + ' cuotas pagadas') : 'Contado (pagado)' }}
                   </span>
                 </div>
                 <div class="flex justify-between">
@@ -330,7 +330,7 @@ window.AdminViewComponent = {
                     <td class="p-3 font-bold text-charcoal">L {{ r.totalPaid }}</td>
                     <td class="p-3 text-charcoal">
                       <span v-if="r.paymentPlan && r.paymentPlan > 1" class="font-semibold text-charcoal">
-                        {{ r.paymentPlan }} cuotas (L {{ r.installmentAmount }})
+                        {{ r.installments.filter(i => i.status === 'Pagada').length }}/{{ r.paymentPlan }} cuotas pagadas
                       </span>
                       <span v-else class="text-charcoal-muted">Contado</span>
                     </td>

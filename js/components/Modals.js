@@ -325,7 +325,7 @@ window.ModalsComponent = {
         <div class="bg-white rounded-t-[28px] sm:rounded-3xl max-w-lg w-full max-h-[92vh] sm:max-h-[85vh] overflow-y-auto shadow-airbnb-modal border border-surface-border flex flex-col">
           
           <div class="px-5 py-4 border-b border-surface-border flex items-center justify-between">
-            <h3 class="font-bold text-sm text-charcoal">Mis Alquileres Activos</h3>
+            <h3 class="font-bold text-sm text-charcoal">Mis Alquileres</h3>
             <button @click="store.showMyRentalsModal = false" class="p-1 rounded-full text-charcoal-muted hover:text-charcoal">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
@@ -336,7 +336,7 @@ window.ModalsComponent = {
           <div class="p-5 space-y-4">
             
             <div 
-              v-for="rental in store.rentals" 
+              v-for="rental in store.myRentals" 
               :key="rental.id"
               class="p-4 rounded-2xl border border-surface-border bg-white space-y-3 shadow-airbnb">
               
@@ -403,6 +403,10 @@ window.ModalsComponent = {
                   </span>
                 </div>
                 <div class="flex justify-between">
+                  <span>Periodo:</span>
+                  <span class="font-bold text-charcoal">{{ store.formatDate(rental.startDate) }} - {{ store.formatDate(rental.endDate) }}</span>
+                </div>
+                <div class="flex justify-between">
                   <span>Garantía en custodia:</span>
                   <span class="font-bold text-forest">L {{ rental.deposit }}</span>
                 </div>
@@ -410,12 +414,44 @@ window.ModalsComponent = {
                   <span>Total alquiler:</span>
                   <span class="font-bold text-charcoal">L {{ rental.totalPaid }}</span>
                 </div>
+                <div class="flex justify-between">
+                  <span>Pagado:</span>
+                  <span class="font-bold text-forest">L {{ store.rentalPaid(rental) }}</span>
+                </div>
+                <div v-if="store.rentalPending(rental) > 0" class="flex justify-between">
+                  <span>Saldo pendiente:</span>
+                  <span class="font-bold text-amber-800">L {{ store.rentalPending(rental) }}</span>
+                </div>
+              </div>
+
+              <!-- Calendario de cuotas -->
+              <div v-if="rental.installments && rental.installments.length > 1" class="space-y-1.5">
+                <p class="text-[11px] font-bold text-charcoal uppercase tracking-wider">Calendario de cuotas</p>
+                <div
+                  v-for="inst in rental.installments"
+                  :key="inst.n"
+                  class="flex items-center justify-between p-2.5 rounded-xl border border-surface-border text-xs">
+                  <div>
+                    <span class="font-bold text-charcoal">Cuota {{ inst.n }}</span>
+                    <span class="text-charcoal-muted"> · vence {{ store.formatDate(inst.dueDate) }}</span>
+                  </div>
+                  <div class="flex items-center space-x-2">
+                    <span class="font-bold text-charcoal">L {{ inst.amount }}</span>
+                    <span v-if="inst.status === 'Pagada'" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-forest-light text-forest border border-forest-border">Pagada</span>
+                    <button
+                      v-else
+                      @click="store.payInstallment(rental.id, inst.n)"
+                      class="text-[10px] font-bold px-2.5 py-1 rounded-full bg-forest text-white hover:bg-forest-hover cursor-pointer">
+                      Pagar ahora
+                    </button>
+                  </div>
+                </div>
               </div>
 
             </div>
 
-            <div v-if="store.rentals.length === 0" class="text-center py-8">
-              <p class="text-xs text-charcoal-muted">No tiene reservas registradas en este momento.</p>
+            <div v-if="store.myRentals.length === 0" class="text-center py-8">
+              <p class="text-xs text-charcoal-muted">Aún no has alquilado ningún artículo. Explora el catálogo y reserva el primero.</p>
             </div>
 
           </div>
