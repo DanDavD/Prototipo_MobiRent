@@ -27,32 +27,32 @@ window.LoginViewComponent = {
       <!-- TARJETA PRINCIPAL DE AUTENTICACIÓN -->
       <main class="max-w-md mx-auto w-full my-auto py-6">
         
-        <!-- SELECTOR DE MODO: INICIAR SESIÓN VS CREAR PERFIL -->
-        <div class="flex p-1 bg-surface-subtle border border-surface-border rounded-2xl mb-6">
+        <!-- Encabezado de Iniciar Sesión -->
+        <div v-if="authMode === 'login'" class="mb-6">
+          <h1 class="text-2xl font-bold tracking-tight text-charcoal">Iniciar sesión</h1>
+          <p class="text-xs text-charcoal-muted mt-1 leading-relaxed">
+            Ingrese sus credenciales para acceder a la plataforma de MobiRent.
+          </p>
+        </div>
+
+        <!-- Encabezado de Crear Perfil / Cuenta -->
+        <div v-else class="mb-6 flex items-center justify-between">
+          <div>
+            <h1 class="text-2xl font-bold tracking-tight text-charcoal">Crear cuenta</h1>
+            <p class="text-xs text-charcoal-muted mt-1 leading-relaxed">
+              Complete sus datos para alquilar o poner en renta en el marketplace.
+            </p>
+          </div>
           <button 
             type="button" 
             @click="switchMode('login')"
-            :class="authMode === 'login' ? 'bg-white text-charcoal font-bold shadow-sm' : 'text-charcoal-muted hover:text-charcoal font-medium'"
-            class="flex-1 py-2.5 text-xs rounded-xl transition-all text-center">
-            Iniciar sesión
+            class="text-xs text-charcoal-muted hover:text-charcoal flex items-center space-x-1 p-2 rounded-lg hover:bg-surface-subtle transition-colors shrink-0"
+            title="Volver a iniciar sesión">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+            </svg>
+            <span class="hidden sm:inline">Volver</span>
           </button>
-          
-          <button 
-            type="button" 
-            @click="switchMode('register')"
-            :class="authMode === 'register' ? 'bg-white text-charcoal font-bold shadow-sm' : 'text-charcoal-muted hover:text-charcoal font-medium'"
-            class="flex-1 py-2.5 text-xs rounded-xl transition-all text-center">
-            Crear perfil
-          </button>
-        </div>
-
-        <div class="mb-6">
-          <h1 class="text-2xl font-bold tracking-tight text-charcoal">
-            {{ authMode === 'login' ? 'Iniciar sesión' : 'Crear un perfil nuevo' }}
-          </h1>
-          <p class="text-xs text-charcoal-muted mt-1 leading-relaxed">
-            {{ authMode === 'login' ? 'Ingrese sus credenciales para acceder a la plataforma de MobiRent.' : 'Complete sus datos personales para alquilar o poner en renta mobiliario y equipo.' }}
-          </p>
         </div>
 
         <!-- Alerta de Error -->
@@ -117,12 +117,23 @@ window.LoginViewComponent = {
           <!-- Botón de Envío Login -->
           <button 
             type="submit"
-            class="w-full bg-forest hover:bg-forest-hover active:scale-[0.99] text-white text-sm font-bold py-3.5 rounded-xl shadow-sm transition-all duration-150 flex items-center justify-center space-x-2 mt-2">
+            class="w-full bg-forest hover:bg-forest-hover active:scale-[0.99] text-white text-sm font-bold py-3.5 rounded-xl shadow-sm transition-all duration-150 flex items-center justify-center space-x-2 mt-2 cursor-pointer">
             <span>Iniciar sesión</span>
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
             </svg>
           </button>
+
+          <!-- Enlace para crear cuenta: ¿No tienes una cuenta? crea una aquí -->
+          <div class="pt-5 mt-2 border-t border-surface-border text-center text-xs text-charcoal-muted">
+            <span>¿No tienes una cuenta?</span>
+            <button 
+              type="button" 
+              @click="switchMode('register')" 
+              class="text-forest hover:text-forest-hover font-bold hover:underline ml-1 cursor-pointer">
+              crea una aquí
+            </button>
+          </div>
         </form>
 
         <!-- FORMULARIO 2: CREAR PERFIL -->
@@ -199,12 +210,23 @@ window.LoginViewComponent = {
           <!-- Botón de Envío Crear Perfil -->
           <button 
             type="submit"
-            class="w-full bg-forest hover:bg-forest-hover active:scale-[0.99] text-white text-sm font-bold py-3.5 rounded-xl shadow-sm transition-all duration-150 flex items-center justify-center space-x-2 mt-2">
-            <span>Crear mi perfil en MobiRent</span>
+            class="w-full bg-forest hover:bg-forest-hover active:scale-[0.99] text-white text-sm font-bold py-3.5 rounded-xl shadow-sm transition-all duration-150 flex items-center justify-center space-x-2 mt-2 cursor-pointer">
+            <span>Crear mi cuenta y entrar al marketplace</span>
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
             </svg>
           </button>
+
+          <!-- Enlace para volver a iniciar sesión: ¿Ya tienes una cuenta? inicia sesión aquí -->
+          <div class="pt-5 mt-2 border-t border-surface-border text-center text-xs text-charcoal-muted">
+            <span>¿Ya tienes una cuenta?</span>
+            <button 
+              type="button" 
+              @click="switchMode('login')" 
+              class="text-forest hover:text-forest-hover font-bold hover:underline ml-1 cursor-pointer">
+              inicia sesión aquí
+            </button>
+          </div>
         </form>
 
       </main>
