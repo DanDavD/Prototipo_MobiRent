@@ -74,9 +74,9 @@ window.NavbarComponent = {
             <!-- Píldora de Perfil Cliente -->
             <div class="flex items-center space-x-1.5 bg-surface-subtle border border-surface-border px-2.5 py-1 rounded-full text-xs">
               <div class="w-5 h-5 rounded-full bg-forest text-white text-[10px] font-bold flex items-center justify-center">
-                C
+                {{ userInitial }}
               </div>
-              <span class="font-medium text-charcoal hidden sm:inline text-xs">cliente@gmail.com</span>
+              <span class="font-medium text-charcoal hidden sm:inline text-xs">{{ store.currentUser.name || store.currentUser.email }}</span>
             </div>
 
             <!-- Botón Cerrar Sesión -->
@@ -246,11 +246,17 @@ window.NavbarComponent = {
 
     const isClient = computed(() => store.currentUser && store.currentUser.role === 'client');
     const isAdmin = computed(() => store.currentUser && store.currentUser.role === 'admin');
+    const userInitial = computed(() => {
+      if (!store.currentUser) return 'U';
+      if (store.currentUser.name) return store.currentUser.name.charAt(0).toUpperCase();
+      return store.currentUser.email.charAt(0).toUpperCase();
+    });
 
     return {
       store,
       isClient,
-      isAdmin
+      isAdmin,
+      userInitial
     };
   }
 };

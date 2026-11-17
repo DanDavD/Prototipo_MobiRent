@@ -224,6 +224,59 @@ window.ModalsComponent = {
                 class="w-full text-base sm:text-xs p-3 border border-surface-border rounded-xl focus:border-forest focus:outline-none">
             </div>
 
+            <!-- Selector de Plan de Pago (Contado o Cuotas) -->
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <label class="text-xs font-bold text-charcoal">Plan de pago:</label>
+                <span class="text-[10px] font-bold text-forest bg-forest-light border border-forest-border px-2 py-0.5 rounded-full">
+                  0% interés
+                </span>
+              </div>
+              <div class="grid grid-cols-3 gap-2">
+                <button 
+                  type="button"
+                  @click="store.checkoutForm.paymentPlan = '1'"
+                  :class="store.checkoutForm.paymentPlan === '1' ? 'border-forest bg-forest-light text-forest font-bold shadow-xs' : 'border-surface-border bg-white text-charcoal hover:bg-surface-subtle'"
+                  class="p-2.5 rounded-xl border text-center transition-all cursor-pointer">
+                  <span class="block text-xs font-bold">1 Cuota</span>
+                  <span class="block text-[10px] text-charcoal-muted mt-0.5">Contado</span>
+                  <span class="block text-xs font-bold mt-1 text-charcoal">L {{ store.calculateRentalTotal }}</span>
+                </button>
+
+                <button 
+                  type="button"
+                  @click="store.checkoutForm.paymentPlan = '2'"
+                  :class="store.checkoutForm.paymentPlan === '2' ? 'border-forest bg-forest-light text-forest font-bold shadow-xs' : 'border-surface-border bg-white text-charcoal hover:bg-surface-subtle'"
+                  class="p-2.5 rounded-xl border text-center transition-all cursor-pointer">
+                  <span class="block text-xs font-bold">2 Cuotas</span>
+                  <span class="block text-[10px] text-charcoal-muted mt-0.5">Quincenales</span>
+                  <span class="block text-xs font-bold mt-1 text-charcoal">2x L {{ Math.round(store.calculateRentalTotal / 2) }}</span>
+                </button>
+
+                <button 
+                  type="button"
+                  @click="store.checkoutForm.paymentPlan = '3'"
+                  :class="store.checkoutForm.paymentPlan === '3' ? 'border-forest bg-forest-light text-forest font-bold shadow-xs' : 'border-surface-border bg-white text-charcoal hover:bg-surface-subtle'"
+                  class="p-2.5 rounded-xl border text-center transition-all cursor-pointer">
+                  <span class="block text-xs font-bold">3 Cuotas</span>
+                  <span class="block text-[10px] text-charcoal-muted mt-0.5">Mensuales</span>
+                  <span class="block text-xs font-bold mt-1 text-charcoal">3x L {{ Math.round(store.calculateRentalTotal / 3) }}</span>
+                </button>
+              </div>
+
+              <!-- Resumen de Cuotas -->
+              <div v-if="store.checkoutForm.paymentPlan !== '1'" class="mt-2.5 p-3 rounded-xl bg-surface-subtle border border-surface-border text-xs text-charcoal space-y-1">
+                <div class="flex justify-between font-medium">
+                  <span class="text-charcoal-muted">Primer abono a pagar hoy:</span>
+                  <strong class="text-forest font-bold">L {{ store.installmentAmount }}</strong>
+                </div>
+                <div class="flex justify-between text-charcoal-muted text-[11px]">
+                  <span>Cuotas restantes automáticas:</span>
+                  <span>{{ Number(store.checkoutForm.paymentPlan) - 1 }} de L {{ store.installmentAmount }}</span>
+                </div>
+              </div>
+            </div>
+
             <div>
               <label class="text-xs font-bold text-charcoal block mb-2">Forma de pago:</label>
               <div class="space-y-2">
@@ -251,8 +304,9 @@ window.ModalsComponent = {
 
             <button 
               @click="store.confirmBooking()"
-              class="w-full bg-forest hover:bg-forest-hover text-white font-bold py-3.5 rounded-full shadow-md transition-colors mt-2 text-sm">
-              Confirmar y pagar L {{ store.calculateRentalTotal }}
+              class="w-full bg-forest hover:bg-forest-hover active:scale-[0.99] text-white font-bold py-3.5 rounded-full shadow-md transition-all mt-2 text-sm cursor-pointer">
+              <span v-if="store.checkoutForm.paymentPlan === '1'">Confirmar y pagar L {{ store.calculateRentalTotal }}</span>
+              <span v-else>Confirmar y pagar 1ª cuota de L {{ store.installmentAmount }} (Total: L {{ store.calculateRentalTotal }})</span>
             </button>
 
           </div>
@@ -343,11 +397,17 @@ window.ModalsComponent = {
                   <span class="font-bold text-charcoal">{{ rental.deliveryAddress }}</span>
                 </div>
                 <div class="flex justify-between">
+                  <span>Modalidad de pago:</span>
+                  <span class="font-bold text-charcoal">
+                    {{ (rental.paymentPlan && rental.paymentPlan > 1) ? (rental.paymentPlan + ' cuotas de L ' + rental.installmentAmount) : '1 cuota (Contado)' }}
+                  </span>
+                </div>
+                <div class="flex justify-between">
                   <span>Garantía en custodia:</span>
                   <span class="font-bold text-forest">L {{ rental.deposit }}</span>
                 </div>
                 <div class="flex justify-between pt-1 border-t border-neutral-200">
-                  <span>Total pagado:</span>
+                  <span>Total alquiler:</span>
                   <span class="font-bold text-charcoal">L {{ rental.totalPaid }}</span>
                 </div>
               </div>

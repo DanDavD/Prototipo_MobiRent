@@ -64,8 +64,25 @@ const store = reactive({
   checkoutForm: {
     address: 'Colonia Los Castaños, 4ta calle, casa 12',
     phone: '+504 9988-7766',
-    paymentMethod: 'card'
+    paymentMethod: 'card',
+    paymentPlan: '1' // '1': Contado, '2': 2 cuotas, '3': 3 cuotas
   },
+
+  // Registro de nuevos usuarios
+  registerForm: {
+    name: '',
+    email: '',
+    phone: '',
+    city: 'San Pedro Sula',
+    password: ''
+  },
+  registeredUsers: (() => {
+    try {
+      const saved = localStorage.getItem('mobirent_users');
+      if (saved) return JSON.parse(saved);
+    } catch (e) {}
+    return [];
+  })(),
 
   // Formulario para nuevo artículo
   newItem: {
@@ -82,11 +99,23 @@ const store = reactive({
   },
 
   // ==============================================================
-  // PROPIEDADES CALCULADAS
+  // PROPIEDADES CALCULADAS Y HELPERS DE INVENTARIO
   // ==============================================================
+
+  isItemRented(itemId) {
+    return this.rentals.some(r => r.itemId === itemId && r.status !== 'Devuelto');
+  },
+
+  get installmentAmount() {
+    const plan = Number(this.checkoutForm.paymentPlan) || 1;
+    return Math.round(this.calculateRentalTotal / plan);
+  },
 
   get filteredItems() {
     return this.items.filter(item => {
+      // Regla de Negocio: Si el artículo está alquilado, se remueve del catálogo
+      if (this.isItemRented(item.id)) return false;
+
       const matchesCategory = this.selectedCategory === 'Todos los artículos' || item.category === this.selectedCategory;
       const matchesCity = this.selectedCity === 'Todas' || item.city === this.selectedCity;
       const query = this.searchQuery.toLowerCase().trim();
@@ -206,6 +235,10 @@ const store = reactive({
   confirmCheckout() {
     if (!this.selectedItem) return;
 
+    const plan = Number(this.checkoutForm.paymentPlan) || 1;
+    const total = this.calculateRentalTotal;
+    const installment = Math.round(total / plan);
+
     const newRental = {
       id: Math.floor(100 + Math.random() * 900),
       itemId: this.selectedItem.id,
@@ -219,11 +252,14 @@ const store = reactive({
       transportFee: this.defaultTransportFee,
       serviceFee: this.defaultServiceFee,
       deposit: this.selectedItem.deposit,
-      totalPaid: this.calculateRentalTotal,
+      totalPaid: total,
       ownerPayout: this.calculateRentalSubtotal,
       status: 'Asignado',
       pickupAddress: `${this.selectedItem.neighborhood}, ${this.selectedItem.city}`,
-      deliveryAddress: `${this.checkoutForm.address}, ${this.selectedItem.city}`
+      deliveryAddress: `${this.checkoutForm.address}, ${this.selectedItem.city}`,
+      paymentMethod: this.checkoutForm.paymentMethod,
+      paymentPlan: plan,
+      installmentAmount: installment
     };
 
     this.rentals.unshift(newRental);
@@ -231,7 +267,7 @@ const store = reactive({
     this.closeCheckout();
     this.closeItemDetail();
     this.showMyRentalsModal = true;
-    this.showToast('¡Reserva confirmada con éxito! Inspección y flete en preparación.');
+    this.showToast('¡Reserva confirmada con éxito! Artículo retirado del catálogo para entrega.');
   },
 
   persistRentals() {
@@ -378,8 +414,60 @@ const store = reactive({
   },
 
   // ==============================================================
-  // MÉTODOS DE AUTENTICACIÓN
+  // MÉTODOS DE AUTENTICACIÓN Y PERFIL
   // ==============================================================
+
+  register(formData) {
+    const name = (formData.name || '').trim();
+    const email = (formData.email || '').trim().toLowerCase();
+    const phone = (formData.phone || '').trim();
+    const city = formData.city || 'San Pedro Sula';
+    const password = (formData.password || '').trim();
+
+    if (!name || !email || !password) {
+      this.loginForm.error = 'Por favor complete su nombre, correo y contraseña.';
+      return false;
+    }
+
+    if (email === 'cliente@gmail.com' || email === 'admin@gmail.com' || this.registeredUsers.some(u => u.email === email)) {
+      this.loginForm.error = 'Este correo electrónico ya tiene una cuenta registrada.';
+      return false;
+    }
+
+    const newUser = {
+      name,
+      email,
+      phone: phone || '+504 9988-0000',
+      city,
+      password,
+      role: 'client'
+    };
+
+    this.registeredUsers.push(newUser);
+    try {
+      localStorage.setItem('mobirent_users', JSON.stringify(this.registeredUsers));
+    } catch(e) {}
+
+    this.currentUser = {
+      email: newUser.email,
+      name: newUser.name,
+      phone: newUser.phone,
+      city: newUser.city,
+      role: 'client'
+    };
+    this.activeRole = 'renter';
+    this.showFullAdmin = false;
+    this.loginForm.error = '';
+    this.checkoutForm.phone = newUser.phone;
+    this.checkoutForm.address = `Colonia principal, ${newUser.city}`;
+
+    try {
+      localStorage.setItem('mobirent_auth_user', JSON.stringify(this.currentUser));
+    } catch (e) {}
+
+    this.showToast(`¡Perfil creado con éxito! Bienvenido a MobiRent, ${newUser.name}.`);
+    return true;
+  },
 
   login(email, password) {
     const cleanEmail = (email || '').trim().toLowerCase();
@@ -417,6 +505,28 @@ const store = reactive({
       return true;
     }
 
+    // Comprobar usuarios registrados dinámicos
+    const foundUser = this.registeredUsers.find(u => u.email === cleanEmail && u.password === cleanPassword);
+    if (foundUser) {
+      this.currentUser = {
+        email: foundUser.email,
+        name: foundUser.name,
+        phone: foundUser.phone,
+        city: foundUser.city,
+        role: 'client'
+      };
+      this.activeRole = 'renter';
+      this.showFullAdmin = false;
+      this.loginForm.error = '';
+      this.checkoutForm.phone = foundUser.phone || this.checkoutForm.phone;
+      this.checkoutForm.address = `Colonia principal, ${foundUser.city || 'San Pedro Sula'}`;
+      try {
+        localStorage.setItem('mobirent_auth_user', JSON.stringify(this.currentUser));
+      } catch (e) {}
+      this.showToast(`Bienvenido de nuevo, ${foundUser.name}.`);
+      return true;
+    }
+
     this.loginForm.error = 'Correo electrónico o contraseña incorrectos.';
     return false;
   },
@@ -443,7 +553,7 @@ try {
   const savedUser = localStorage.getItem('mobirent_auth_user');
   if (savedUser) {
     const parsed = JSON.parse(savedUser);
-    if (parsed && (parsed.email === 'cliente@gmail.com' || parsed.email === 'admin@gmail.com')) {
+    if (parsed && (parsed.email === 'cliente@gmail.com' || parsed.email === 'admin@gmail.com' || parsed.role === 'client')) {
       store.currentUser = parsed;
       store.activeRole = parsed.role === 'admin' ? 'admin' : 'renter';
       store.showFullAdmin = (parsed.role === 'admin');

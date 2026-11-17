@@ -277,6 +277,12 @@ window.AdminViewComponent = {
                   <span class="text-charcoal">{{ r.renterName }}</span>
                 </div>
                 <div class="flex justify-between">
+                  <span class="text-charcoal-muted">Plan de pago:</span>
+                  <span class="text-charcoal font-semibold">
+                    {{ (r.paymentPlan && r.paymentPlan > 1) ? (r.paymentPlan + ' cuotas (L ' + r.installmentAmount + ')') : 'Contado (1 cuota)' }}
+                  </span>
+                </div>
+                <div class="flex justify-between">
                   <span class="text-charcoal-muted">Pago a dueño:</span>
                   <span class="text-charcoal">L {{ r.ownerPayout }}</span>
                 </div>
@@ -305,7 +311,8 @@ window.AdminViewComponent = {
                   <tr>
                     <th class="p-3">Orden</th>
                     <th class="p-3">Cliente</th>
-                    <th class="p-3">Total pagado</th>
+                    <th class="p-3">Total</th>
+                    <th class="p-3">Plan de pago</th>
                     <th class="p-3">Dueño</th>
                     <th class="p-3">Flete</th>
                     <th class="p-3">Comisión MobiRent</th>
@@ -321,6 +328,12 @@ window.AdminViewComponent = {
                     </td>
                     <td class="p-3 text-charcoal">{{ r.renterName }}</td>
                     <td class="p-3 font-bold text-charcoal">L {{ r.totalPaid }}</td>
+                    <td class="p-3 text-charcoal">
+                      <span v-if="r.paymentPlan && r.paymentPlan > 1" class="font-semibold text-charcoal">
+                        {{ r.paymentPlan }} cuotas (L {{ r.installmentAmount }})
+                      </span>
+                      <span v-else class="text-charcoal-muted">Contado</span>
+                    </td>
                     <td class="p-3 text-charcoal-muted">L {{ r.ownerPayout }}</td>
                     <td class="p-3 text-charcoal-muted">L {{ r.transportFee }}</td>
                     <td class="p-3 font-bold text-forest">L {{ r.serviceFee }}</td>
@@ -350,7 +363,19 @@ window.AdminViewComponent = {
               <div class="flex items-center space-x-3.5">
                 <img :src="item.image" :alt="item.title" class="w-16 h-16 rounded-xl object-cover border border-surface-border shrink-0">
                 <div>
-                  <h4 class="text-xs font-bold text-charcoal line-clamp-1">{{ item.title }}</h4>
+                  <div class="flex items-center space-x-2">
+                    <h4 class="text-xs font-bold text-charcoal line-clamp-1">{{ item.title }}</h4>
+                    <span 
+                      v-if="store.isItemRented(item.id)"
+                      class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-amber-50 text-amber-800 border border-amber-200 shrink-0">
+                      Alquilado
+                    </span>
+                    <span 
+                      v-else
+                      class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-200 shrink-0">
+                      Disponible
+                    </span>
+                  </div>
                   <p class="text-[11px] text-charcoal-muted mt-0.5">{{ item.category }} · {{ item.city }}</p>
                   <p class="text-xs font-bold text-forest mt-1">L {{ item.priceDay }} / día</p>
                 </div>

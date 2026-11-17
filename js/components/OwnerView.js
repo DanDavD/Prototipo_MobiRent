@@ -116,9 +116,15 @@ window.OwnerViewComponent = {
                 <div class="flex items-center space-x-2">
                   <h3 class="font-bold text-charcoal text-sm leading-snug">{{ item.title }}</h3>
                   <span 
+                    v-if="store.isItemRented(item.id)"
+                    class="text-[10px] font-bold px-2 py-0.5 rounded border bg-amber-50 text-amber-800 border-amber-200 shrink-0">
+                    Alquilado actualmente
+                  </span>
+                  <span 
+                    v-else
                     :class="item.status === 'activo' ? 'bg-forest-light text-forest border-forest-border' : 'bg-neutral-100 text-charcoal-muted border-neutral-200'"
                     class="text-[10px] font-bold px-2 py-0.5 rounded border capitalize shrink-0">
-                    {{ item.status }}
+                    {{ item.status === 'activo' ? 'Disponible' : item.status }}
                   </span>
                 </div>
                 <p class="text-xs text-charcoal-muted mt-1">{{ item.category }} · {{ item.city }}</p>

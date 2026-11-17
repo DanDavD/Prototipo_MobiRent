@@ -3,11 +3,11 @@
  * ==============================================================
  * Componente: LoginView (js/components/LoginView.js)
  * ==============================================================
- * Pantalla de inicio de sesión de producción (Estética Airbnb):
- * - Autenticación real según credenciales ingresadas:
- *   1. cliente@gmail.com / contra123 -> Sección Cliente
- *   2. admin@gmail.com / contra123   -> Sección Administrador
- * - Sin tips, pistas ni tarjetas de demostración.
+ * Pantalla de acceso y creación de perfil (Estética Airbnb):
+ * - Selector sobrio: "Iniciar sesión" o "Crear perfil".
+ * - Creación de perfil con nombre, correo, teléfono WhatsApp y ciudad.
+ * - Validación y guardado persistente en base de datos local.
+ * - Inicio de sesión con credenciales demo o usuarios registrados.
  * - Tipografía Plus Jakarta Sans, diseño limpio en blanco y verde bosque.
  */
 
@@ -24,17 +24,38 @@ window.LoginViewComponent = {
         <span class="text-xs text-charcoal-muted font-medium">Acceso Seguro</span>
       </header>
 
-      <!-- TARJETA PRINCIPAL DE LOGIN -->
-      <main class="max-w-md mx-auto w-full my-auto py-8">
+      <!-- TARJETA PRINCIPAL DE AUTENTICACIÓN -->
+      <main class="max-w-md mx-auto w-full my-auto py-6">
         
-        <div class="mb-7">
-          <h1 class="text-2xl font-bold tracking-tight text-charcoal">Iniciar sesión</h1>
+        <!-- SELECTOR DE MODO: INICIAR SESIÓN VS CREAR PERFIL -->
+        <div class="flex p-1 bg-surface-subtle border border-surface-border rounded-2xl mb-6">
+          <button 
+            type="button" 
+            @click="switchMode('login')"
+            :class="authMode === 'login' ? 'bg-white text-charcoal font-bold shadow-sm' : 'text-charcoal-muted hover:text-charcoal font-medium'"
+            class="flex-1 py-2.5 text-xs rounded-xl transition-all text-center">
+            Iniciar sesión
+          </button>
+          
+          <button 
+            type="button" 
+            @click="switchMode('register')"
+            :class="authMode === 'register' ? 'bg-white text-charcoal font-bold shadow-sm' : 'text-charcoal-muted hover:text-charcoal font-medium'"
+            class="flex-1 py-2.5 text-xs rounded-xl transition-all text-center">
+            Crear perfil
+          </button>
+        </div>
+
+        <div class="mb-6">
+          <h1 class="text-2xl font-bold tracking-tight text-charcoal">
+            {{ authMode === 'login' ? 'Iniciar sesión' : 'Crear un perfil nuevo' }}
+          </h1>
           <p class="text-xs text-charcoal-muted mt-1 leading-relaxed">
-            Ingrese sus credenciales para acceder a la plataforma de MobiRent.
+            {{ authMode === 'login' ? 'Ingrese sus credenciales para acceder a la plataforma de MobiRent.' : 'Complete sus datos personales para alquilar o poner en renta mobiliario y equipo.' }}
           </p>
         </div>
 
-        <!-- Alerta de Error de Credenciales -->
+        <!-- Alerta de Error -->
         <div 
           v-if="store.loginForm.error" 
           class="mb-5 p-3.5 rounded-xl bg-red-50 border border-red-200 text-xs text-red-700 flex items-start space-x-2.5">
@@ -44,8 +65,8 @@ window.LoginViewComponent = {
           <span class="leading-snug">{{ store.loginForm.error }}</span>
         </div>
 
-        <!-- Formulario de Inicio de Sesión -->
-        <form @submit.prevent="handleSubmit" class="space-y-4">
+        <!-- FORMULARIO 1: INICIAR SESIÓN -->
+        <form v-if="authMode === 'login'" @submit.prevent="handleLogin" class="space-y-4">
           
           <!-- Campo: Correo Electrónico -->
           <div>
@@ -93,11 +114,93 @@ window.LoginViewComponent = {
             </div>
           </div>
 
-          <!-- Botón de Envío -->
+          <!-- Botón de Envío Login -->
           <button 
             type="submit"
             class="w-full bg-forest hover:bg-forest-hover active:scale-[0.99] text-white text-sm font-bold py-3.5 rounded-xl shadow-sm transition-all duration-150 flex items-center justify-center space-x-2 mt-2">
             <span>Iniciar sesión</span>
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+            </svg>
+          </button>
+        </form>
+
+        <!-- FORMULARIO 2: CREAR PERFIL -->
+        <form v-else @submit.prevent="handleRegister" class="space-y-3.5">
+          
+          <!-- Campo: Nombre Completo -->
+          <div>
+            <label class="block text-xs font-bold text-charcoal uppercase tracking-wider mb-1">
+              Nombre completo
+            </label>
+            <input 
+              type="text" 
+              v-model="registerData.name"
+              placeholder="Ej. Roberto Rivera" 
+              required
+              class="w-full text-sm px-3.5 py-2.5 rounded-xl border border-surface-border bg-white text-charcoal placeholder-charcoal-light focus:outline-none focus:ring-2 focus:ring-forest/20 focus:border-forest transition-colors">
+          </div>
+
+          <!-- Campo: Correo Electrónico -->
+          <div>
+            <label class="block text-xs font-bold text-charcoal uppercase tracking-wider mb-1">
+              Correo electrónico
+            </label>
+            <input 
+              type="email" 
+              v-model="registerData.email"
+              placeholder="mi_correo@ejemplo.com" 
+              required
+              autocomplete="email"
+              class="w-full text-sm px-3.5 py-2.5 rounded-xl border border-surface-border bg-white text-charcoal placeholder-charcoal-light focus:outline-none focus:ring-2 focus:ring-forest/20 focus:border-forest transition-colors">
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <!-- Campo: Teléfono / WhatsApp -->
+            <div>
+              <label class="block text-xs font-bold text-charcoal uppercase tracking-wider mb-1">
+                WhatsApp
+              </label>
+              <input 
+                type="tel" 
+                v-model="registerData.phone"
+                placeholder="+504 9900-1122" 
+                required
+                class="w-full text-sm px-3.5 py-2.5 rounded-xl border border-surface-border bg-white text-charcoal placeholder-charcoal-light focus:outline-none focus:ring-2 focus:ring-forest/20 focus:border-forest transition-colors">
+            </div>
+
+            <!-- Campo: Ciudad -->
+            <div>
+              <label class="block text-xs font-bold text-charcoal uppercase tracking-wider mb-1">
+                Ciudad
+              </label>
+              <select 
+                v-model="registerData.city"
+                class="w-full text-sm px-3.5 py-2.5 rounded-xl border border-surface-border bg-white text-charcoal focus:outline-none focus:ring-2 focus:ring-forest/20 focus:border-forest transition-colors">
+                <option value="San Pedro Sula">San Pedro Sula</option>
+                <option value="Tegucigalpa">Tegucigalpa</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Campo: Contraseña -->
+          <div>
+            <label class="block text-xs font-bold text-charcoal uppercase tracking-wider mb-1">
+              Crear contraseña
+            </label>
+            <input 
+              type="password" 
+              v-model="registerData.password"
+              placeholder="Mínimo 6 caracteres" 
+              required
+              class="w-full text-sm px-3.5 py-2.5 rounded-xl border border-surface-border bg-white text-charcoal placeholder-charcoal-light focus:outline-none focus:ring-2 focus:ring-forest/20 focus:border-forest transition-colors">
+          </div>
+
+          <!-- Botón de Envío Crear Perfil -->
+          <button 
+            type="submit"
+            class="w-full bg-forest hover:bg-forest-hover active:scale-[0.99] text-white text-sm font-bold py-3.5 rounded-xl shadow-sm transition-all duration-150 flex items-center justify-center space-x-2 mt-2">
+            <span>Crear mi perfil en MobiRent</span>
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
             </svg>
@@ -116,18 +219,40 @@ window.LoginViewComponent = {
     </div>
   `,
   setup() {
-    const { ref } = Vue;
-    const store = window.MobiRentStore; // Direct window access
+    const { ref, reactive } = Vue;
+    const store = window.MobiRentStore;
     const showPassword = ref(false);
+    const authMode = ref('login'); // 'login' | 'register'
 
-    const handleSubmit = () => {
+    const registerData = reactive({
+      name: '',
+      email: '',
+      phone: '',
+      city: 'San Pedro Sula',
+      password: ''
+    });
+
+    const switchMode = (mode) => {
+      authMode.value = mode;
+      store.loginForm.error = '';
+    };
+
+    const handleLogin = () => {
       store.login(store.loginForm.email, store.loginForm.password);
+    };
+
+    const handleRegister = () => {
+      store.register(registerData);
     };
 
     return {
       store,
       showPassword,
-      handleSubmit
+      authMode,
+      registerData,
+      switchMode,
+      handleLogin,
+      handleRegister
     };
   }
 };
